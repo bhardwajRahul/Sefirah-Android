@@ -32,6 +32,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import sefirah.clipboard.ClipboardHandler
@@ -859,24 +860,43 @@ class NetworkService : Service() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        serverAcceptJob?.cancel()
+        try {
+            tcpServerSocket?.close()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error closing TCP server", e)
+        }
+
+        // Clean disconnect all peers
+        runBlocking {
+            deviceManager.pairedDevices.value.forEach { device ->
+                if (device.connectionState.isConnected) {
+                    sendMessage(device.deviceId, Disconnect)
+                    disconnectDevice(device, true)
+                }
+            }
+        }
+
         scope.cancel()
+
         unregisterReceiver(batteryReceiver)
         unregisterReceiver(interruptionFilterReceiver)
         unregisterReceiver(screenOnReceiver)
         unregisterReceiver(wifiStateReceiver)
-        callStateReceiver.unregister()
+        callStateReceiver.unregister(this)
+        networkDiscovery.unregister()
+
         sftpServer.stop()
         remotePlaybackHandler.release()
         smsHandler.stop()
-        serverAcceptJob?.cancel()
 
-        try {
-            tcpServerSocket?.close()
-            Log.d(TAG, "TCP server closed")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error closing TCP server", e)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
         }
+        super.onDestroy()
     }
 
     companion object {

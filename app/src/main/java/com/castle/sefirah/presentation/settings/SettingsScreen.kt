@@ -210,6 +210,19 @@ fun SettingsScreen(
                 }
             )
         }
+
+        item {
+            val activity = context as? Activity
+            TextPreferenceWidget(
+                title = "Stop Service & Exit",
+                subtitle = "Disconnect all devices, stop the service, and close the application",
+                icon = ImageVector.vectorResource(R.drawable.ic_close),
+                onPreferenceClick = {
+                    viewModel.stopService()
+                    activity?.finishAffinity()
+                }
+            )
+        }
     }
 
     // Device Name Dialog
