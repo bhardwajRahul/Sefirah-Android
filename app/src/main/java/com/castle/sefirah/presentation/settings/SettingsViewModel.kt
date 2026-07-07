@@ -62,6 +62,9 @@ class SettingsViewModel @Inject constructor(
     private val _storageLocation = MutableStateFlow("")
     val storageLocation: StateFlow<String> = _storageLocation
 
+    private val _recycleBinLocation = MutableStateFlow("")
+    val recycleBinLocation: StateFlow<String> = _recycleBinLocation
+
     private val _language = MutableStateFlow("system")
     val language: StateFlow<String> = _language
 
@@ -79,6 +82,12 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.getStorageLocation().collectLatest { location ->
                 _storageLocation.value = location
+            }
+        }
+
+        viewModelScope.launch {
+            preferencesRepository.getRecycleBinLocation().collectLatest { location ->
+                _recycleBinLocation.value = location
             }
         }
         
@@ -147,6 +156,12 @@ class SettingsViewModel @Inject constructor(
     fun updateStorageLocation(string: String) {
         viewModelScope.launch {
             preferencesRepository.updateStorageLocation(string)
+        }
+    }
+
+    fun updateRecycleBinLocation(string: String) {
+        viewModelScope.launch {
+            preferencesRepository.updateRecycleBinLocation(string)
         }
     }
 

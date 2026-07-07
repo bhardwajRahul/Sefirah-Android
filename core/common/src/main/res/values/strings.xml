@@ -127,6 +127,8 @@
     <!-- Storage -->
     <string name="choose_storage_location">Choose Storage Location</string>
     <string name="storage_location_description">Select a folder where the app will store received files. Downloads will be used as default.</string>
+    <string name="recycle_bin_location_preference">Recycle bin location</string>
+    <string name="recycle_bin_location_description">Folder where files deleted over remote storage are moved instead of permanently deleted.</string>
     <string name="select_folder_button">Select a folder</string>
     <string name="selected_folder_label">Selected folder</string>
 

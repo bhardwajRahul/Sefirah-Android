@@ -43,25 +43,24 @@ fun getFileProviderUri(context: Context, file: File): Uri {
     return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 }
 
+const val DEFAULT_RECYCLE_BIN_PATH = "/storage/emulated/0/.RecycleBin"
+
 /**
  * Helper function to return a human-readable version of the URI.
  * It supports both document tree URIs (content://...) and direct file paths (/storage/emulated/0/...).
  */
 fun getReadablePathFromUri(context: Context, uriString: String): String {
     return if (uriString.startsWith("content://")) {
-        // Parse the URI and convert it to a human-readable path
-        val uri = uriString.toUri()
-        getPathFromTreeUri(uri)
+        getPathFromTreeUri(uriString.toUri())
     } else {
-        // Return the file path as is (e.g., "/storage/emulated/0/Downloads")
-        "/storage/emulated/0/Download"
+        uriString.trim().removeSurrounding("\"")
     }
 }
 
 /**
  * Helper function to get the human-readable path from a Document Tree URI.
  */
-private fun getPathFromTreeUri(uri: Uri): String {
+fun getPathFromTreeUri(uri: Uri): String {
     // Decode the URI to make it human-readable
     val decodedPath = URLDecoder.decode(uri.toString(), "UTF-8")
 

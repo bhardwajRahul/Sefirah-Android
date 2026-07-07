@@ -18,6 +18,9 @@ interface PreferencesRepository {
     suspend fun updateStorageLocation(uri: String)
     suspend fun getStorageLocation(): Flow<String>
 
+    suspend fun updateRecycleBinLocation(uri: String)
+    suspend fun getRecycleBinLocation(): Flow<String>
+
     suspend fun savePermissionRequested(permission: String)
     suspend fun clearPermissionRequested(permission: String)
     fun hasRequestedPermission(permission: String): Flow<Boolean>

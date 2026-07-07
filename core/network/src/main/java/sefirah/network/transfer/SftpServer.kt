@@ -21,6 +21,11 @@ import org.apache.sshd.sftp.server.FileHandle
 import org.apache.sshd.sftp.server.SftpFileSystemAccessor
 import org.apache.sshd.sftp.server.SftpSubsystemFactory
 import org.apache.sshd.sftp.server.SftpSubsystemProxy
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import sefirah.common.util.DEFAULT_RECYCLE_BIN_PATH
+import sefirah.common.util.checkStoragePermission
+import sefirah.common.util.getPathFromTreeUri
 import sefirah.domain.interfaces.DeviceManager
 import sefirah.domain.model.SftpServerInfo
 import sefirah.network.util.MediaStoreHelper
@@ -30,6 +35,7 @@ import sefirah.network.util.generateRandomPassword
 import java.nio.channels.Channel
 import java.nio.channels.SeekableByteChannel
 import java.nio.file.CopyOption
+import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -50,6 +56,39 @@ class SftpServer @Inject constructor(
 
     private var serverInfo: SftpServerInfo? = null
 
+
+    private fun getRecycleBinDir(): Path {
+        val configured = runBlocking {
+            preferencesRepository.getRecycleBinLocation().first()
+        }
+        val path = if (configured.isEmpty()) {
+            DEFAULT_RECYCLE_BIN_PATH
+        } else {
+            getPathFromTreeUri(configured.toUri())
+        }
+        return Paths.get(path)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @Throws(IOException::class)
+    private fun moveToRecycleBin(path: Path) {
+        val recycleBinDir = getRecycleBinDir()
+        Files.createDirectories(recycleBinDir)
+        val dateExpires = defaultTrashExpires()
+        var dest = recycleBinDir.resolve(trashedFileName(path.fileName.toString(), dateExpires))
+        var suffix = 0
+        while (Files.exists(dest)) {
+            dest = recycleBinDir.resolve(trashedFileName("${path.fileName}_$suffix", dateExpires))
+            suffix++
+        }
+        Files.move(path, dest)
+        Log.d(TAG, "Moved to recycle bin: $path -> $dest (expires=$dateExpires)")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun isInRecycleBin(path: Path): Boolean =
+        path.normalize().startsWith(getRecycleBinDir().normalize())
+
     private class PfxKeyPairProvider : KeyPairProvider {
         private val keyPair: KeyPair = initializeKeyPair()
 
@@ -66,23 +105,12 @@ class SftpServer @Inject constructor(
         override fun loadKeys(session: SessionContext?): Iterable<KeyPair> = listOf(keyPair)
     }
 
-    private class SimpleFileSystemFactory : VirtualFileSystemFactory() {
-        init {
-            defaultHomeDir = Paths.get("/")
-        }
-    }
-
     fun initialize() {
         if (sshd != null) return
+        if (!SUPPORTS_NATIVEFS) return
+
         val sshd = ServerBuilder.builder().apply {
-            fileSystemFactory(
-                if (SUPPORTS_NATIVEFS) {
-                    NativeFileSystemFactory()
-                } else {
-                    // Configure Saf file system
-                    return
-                }
-            )
+            fileSystemFactory(NativeFileSystemFactory())
         }.build()
 
 
@@ -117,8 +145,14 @@ class SftpServer @Inject constructor(
                         path: Path?,
                         isDirectory: Boolean
                     ) {
-                        super.removeFile(subsystem, path, isDirectory)
-                        path?.let { notifyMediaStore(it) }
+                        path?.let {
+                            if (isInRecycleBin(it)) {
+                                super.removeFile(subsystem, it, isDirectory)
+                            } else {
+                                moveToRecycleBin(it)
+                            }
+                            notifyMediaStore(it)
+                        }
                     }
 
                     override fun copyFile(
@@ -171,8 +205,11 @@ class SftpServer @Inject constructor(
         this.sshd = sshd
     }
 
-    suspend fun start() : SftpServerInfo? {
+    fun start() : SftpServerInfo? {
         if (isRunning) return serverInfo
+
+        initialize()
+        val server = sshd ?: return null
 
         val pwd = generateRandomPassword()
         val localDevice = deviceManager.localDevice
@@ -180,33 +217,25 @@ class SftpServer @Inject constructor(
 
         val paths = mutableListOf<String>()
         val pathNames = mutableListOf<String>()
-        if (SUPPORTS_NATIVEFS) {
-            val volumes = context.getSystemService(StorageManager::class.java).storageVolumes
-            for (sv in volumes) {
-                val dir = sv.directory ?: continue
-                paths.add(dir.path)
-                pathNames.add(sv.getDescription(context))
-            }
+        val volumes = context.getSystemService(StorageManager::class.java).storageVolumes
+        for (sv in volumes) {
+            val dir = sv.directory ?: continue
+            paths.add(dir.path)
+            pathNames.add(sv.getDescription(context))
+        }
+
+        server.keyPairProvider = PfxKeyPairProvider()
+        server.publickeyAuthenticator = PublickeyAuthenticator { _, _, _ -> true }
+        server.passwordAuthenticator = PasswordAuthenticator { user, password, _ ->
+            user == username && password == pwd
         }
 
         PORT_RANGE.forEach { port ->
             try {
-                sshd = SshServer.setUpDefaultServer().apply {
-                    this.port = port
-                    keyPairProvider = PfxKeyPairProvider()
-
-                    publickeyAuthenticator = PublickeyAuthenticator { _, _, _ -> true }
-                    passwordAuthenticator = PasswordAuthenticator { user, password, _ ->
-                        user == username && password == pwd
-                    }
-                    fileSystemFactory = SimpleFileSystemFactory()
-                    subsystemFactories = listOf(SftpSubsystemFactory())
-                    start()
-                }
+                server.port = port
+                server.start()
 
                 isRunning = true
-
-                Log.d(TAG, "SFTP server started: $localAddress on port $port, Pass: $pwd, paths: $paths")
 
                 serverInfo = SftpServerInfo(
                     username = username,
@@ -219,7 +248,7 @@ class SftpServer @Inject constructor(
                 return serverInfo
             }
             catch (e: Exception) {
-                Log.e(TAG, "Failed to start SFTP server", e)
+                Log.e(TAG, "Failed to start SFTP server on port $port", e)
                 throw e
             }
         }
@@ -228,9 +257,10 @@ class SftpServer @Inject constructor(
 
     fun stop() {
         try {
-            if (isRunning){
+            if (isRunning) {
                 sshd?.stop(true)
                 isRunning = false
+                serverInfo = null
             }
             Log.d(TAG, "SFTP server stopped")
         } catch (e: Exception) {
@@ -240,9 +270,16 @@ class SftpServer @Inject constructor(
 
     companion object {
         private const val TAG = "SftpServer"
+        private const val TRASH_RETENTION_MS = 30L * 24 * 60 * 60 * 1000
         val SUPPORTS_NATIVEFS = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
         private val PORT_RANGE = 5151..5169
+
+        private fun defaultTrashExpires(): Long =
+            (System.currentTimeMillis() + TRASH_RETENTION_MS) / 1000
+
+        private fun trashedFileName(displayName: String, dateExpires: Long): String =
+            ".trashed-$dateExpires-$displayName"
 
         init {
             System.setProperty(SecurityUtils.SECURITY_PROVIDER_REGISTRARS, "") // disable BouncyCastle

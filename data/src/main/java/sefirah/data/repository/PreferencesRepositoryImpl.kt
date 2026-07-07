@@ -55,6 +55,16 @@ class PreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateRecycleBinLocation(uri: String) {
+        RECYCLE_BIN_LOCATION.update(uri)
+    }
+
+    override suspend fun getRecycleBinLocation(): Flow<String> {
+        return datastore.data.map { preferences ->
+            preferences[RECYCLE_BIN_LOCATION] ?: ""
+        }
+    }
+
     override suspend fun saveLanguage(language: String) {
         LANGUAGE.update(language)
     }
@@ -243,6 +253,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         val LANGUAGE = stringPreferencesKey("language")
 
         val STORAGE_LOCATION = stringPreferencesKey("storageLocation")
+        val RECYCLE_BIN_LOCATION = stringPreferencesKey("recycleBinLocation")
         val APP_ENTRY = booleanPreferencesKey("appEntry")
         val PASSIVE_DISCOVERY = booleanPreferencesKey("passiveDiscovery")
         val LAST_CHECKED_FOR_UPDATE = longPreferencesKey("lastCheckedForUpdate")

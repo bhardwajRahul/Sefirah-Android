@@ -50,6 +50,7 @@ import com.castle.sefirah.presentation.settings.components.TextPreferenceWidget
 import com.castle.sefirah.util.CrashLogUtil
 import kotlinx.coroutines.launch
 import sefirah.common.R
+import sefirah.common.util.DEFAULT_RECYCLE_BIN_PATH
 import sefirah.common.util.getReadablePathFromUri
 import sefirah.common.util.openAppSettings
 
@@ -64,6 +65,7 @@ fun SettingsScreen(
     
     val permissionStates by viewModel.permissionStates.collectAsState()
     val storageLocation by viewModel.storageLocation.collectAsState()
+    val recycleBinLocation by viewModel.recycleBinLocation.collectAsState()
     val localDevice by viewModel.localDevice.collectAsState()
 
     // State for device name dialog
@@ -113,7 +115,9 @@ fun SettingsScreen(
     )
 
     val storageLocationDisplay = storageLocation.ifEmpty { "\"/storage/emulated/0/Downloads\"" }
+    val recycleBinLocationDisplay = recycleBinLocation.ifEmpty { DEFAULT_RECYCLE_BIN_PATH }
     val pickStorageLocation = storageLocationPicker(viewModel)
+    val pickRecycleBinLocation = recycleBinLocationPicker(viewModel)
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -160,6 +164,20 @@ fun SettingsScreen(
         }
 
         item {
+            TextPreferenceWidget(
+                title = stringResource(R.string.recycle_bin_location_preference),
+                subtitle = getReadablePathFromUri(context, recycleBinLocationDisplay),
+                icon = ImageVector.vectorResource(R.drawable.ic_delete_fill),
+                onPreferenceClick = {
+                    try {
+                        pickRecycleBinLocation.launch(null)
+                    } catch (_: ActivityNotFoundException) {
+                    }
+                }
+            )
+        }
+
+        item {
                 TextPreferenceWidget(
                     title = stringResource(R.string.device_name_preference),
                     subtitle = localDevice?.deviceName,
@@ -186,13 +204,13 @@ fun SettingsScreen(
         }
 
         item {
-                TextPreferenceWidget(
-                    title = stringResource(R.string.help),
-                    icon = ImageVector.vectorResource(R.drawable.ic_help_fill),
-                    onPreferenceClick = {
-                        uriHandler.openUri("https://github.com/shrimqy/Sekia/blob/master/README.MD")
-                    }
-                )
+            TextPreferenceWidget(
+                title = stringResource(R.string.help),
+                icon = ImageVector.vectorResource(R.drawable.ic_help_fill),
+                onPreferenceClick = {
+                    uriHandler.openUri("https://github.com/shrimqy/Sekia/blob/master/README.MD")
+                }
+            )
         }
         
         item {
@@ -329,7 +347,15 @@ fun SwitchPermissionPrefWidget(
 }
 
 @Composable
-fun storageLocationPicker(viewModel: SettingsViewModel): ManagedActivityResultLauncher<Uri?, Uri?> {
+fun storageLocationPicker(viewModel: SettingsViewModel): ManagedActivityResultLauncher<Uri?, Uri?> =
+    folderPicker { viewModel.updateStorageLocation(it) }
+
+@Composable
+fun recycleBinLocationPicker(viewModel: SettingsViewModel): ManagedActivityResultLauncher<Uri?, Uri?> =
+    folderPicker { viewModel.updateRecycleBinLocation(it) }
+
+@Composable
+private fun folderPicker(onUriSelected: (String) -> Unit): ManagedActivityResultLauncher<Uri?, Uri?> {
     val context = LocalContext.current
     return rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree(),
@@ -349,7 +375,7 @@ fun storageLocationPicker(viewModel: SettingsViewModel): ManagedActivityResultLa
                 Log.e("File Picker", "$e")
             }
 
-            viewModel.updateStorageLocation(uri.toString())
+            onUriSelected(uri.toString())
         }
     }
 }
