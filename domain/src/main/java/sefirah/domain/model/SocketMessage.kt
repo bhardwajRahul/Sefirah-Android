@@ -183,7 +183,7 @@ data class ContactInfo(
 data class NotificationInfo(
     val notificationKey: String,
     val infoType: NotificationInfoType,
-    val timestamp: String? = null,
+    val timestampMillis: Long = 0,
     val appPackage: String? = null,
     val appName: String? = null,
     val title: String? = null,

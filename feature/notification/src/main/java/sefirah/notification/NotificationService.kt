@@ -35,9 +35,6 @@ import sefirah.domain.interfaces.PreferencesRepository
 import sefirah.common.util.bitmapToBase64
 import sefirah.common.util.drawableToBase64
 import sefirah.common.util.drawableToBitmap
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale.getDefault
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -294,14 +291,6 @@ class NotificationService @Inject constructor(
                 emptyList()
             }
 
-            // Get the timestamp of the notification
-            val timestamp = notification.`when`
-
-            // Convert timestamp to a human-readable format if needed
-            val formattedTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", getDefault()).format(
-                Date(timestamp)
-            )
-            
             val actions = notification.actions?.mapIndexedNotNull { index, action ->
                 // skip reply actions
                 if (!action.remoteInputs?.firstOrNull()?.resultKey.isNullOrEmpty()) return@mapIndexedNotNull null
@@ -320,7 +309,7 @@ class NotificationService @Inject constructor(
             val notificationInfo = NotificationInfo(
                 notificationKey = notificationKey,
                 infoType = notificationInfoType,
-                timestamp = formattedTimestamp,
+                timestampMillis = notification.`when`,
                 appPackage = sbn.packageName,
                 appName = appName,
                 title = title,
