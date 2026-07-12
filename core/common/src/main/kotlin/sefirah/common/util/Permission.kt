@@ -24,7 +24,8 @@ data class PermissionStates(
     val readSensitiveNotificationsGranted: Boolean = false,
     val smsPermissionGranted: Boolean = false,
     val contactsGranted: Boolean = false,
-    val phoneStateGranted: Boolean = false
+    val phoneStateGranted: Boolean = false,
+    val callLogsGranted: Boolean = false,
 )
 
 fun checkNotificationPermission(

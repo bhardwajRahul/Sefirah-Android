@@ -14,11 +14,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import sefirah.FeatureManager
 import sefirah.clipboard.ClipboardListener
 import sefirah.common.util.PermissionStates
 import sefirah.common.util.checkNotificationPermission
 import sefirah.common.util.checkStoragePermission
 import sefirah.common.util.isAccessibilityServiceEnabled
+import sefirah.common.util.isCallLogsPermissionGranted
 import sefirah.common.util.isNotificationListenerEnabled
 import sefirah.common.util.phoneStatePermissionGranted
 import sefirah.common.util.smsPermissionGranted
@@ -35,6 +37,7 @@ class DeviceSettingsViewModel @Inject constructor(
     private val deviceManager: DeviceManager,
     private val networkManager: NetworkManager,
     private val preferencesRepository: PreferencesRepository,
+    private val featureManager: FeatureManager,
     private val appScope: AppCoroutineScope,
     savedStateHandle: SavedStateHandle,
     application: Application
@@ -74,7 +77,8 @@ class DeviceSettingsViewModel @Inject constructor(
             accessibilityGranted = isAccessibilityServiceEnabled(context, "${context.packageName}/${ClipboardListener::class.java.canonicalName}"),
             notificationListenerGranted = isNotificationListenerEnabled(context),
             smsPermissionGranted = smsPermissionGranted(context),
-            phoneStateGranted = phoneStatePermissionGranted(context)
+            phoneStateGranted = phoneStatePermissionGranted(context),
+            callLogsGranted = isCallLogsPermissionGranted(context),
         )
         _permissionStates.value = newStates
     }
@@ -148,66 +152,77 @@ class DeviceSettingsViewModel @Inject constructor(
     fun saveClipboardSyncSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveClipboardSyncSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveMessageSyncSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveMessageSyncSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveNotificationSyncSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveNotificationSyncSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveImageClipboardSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveImageClipboardSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveMediaSessionSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveMediaSessionSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveMediaSessionNotificationSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveMediaSessionNotificationSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveRemoteVolumeControlSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveRemoteVolumeControlSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveMediaPlayerControlSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveMediaPlayerControlSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveRemoteStorageSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveRemoteStorageSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveCallStateSyncSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveCallStateSyncSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 
     fun saveCallLogSyncSettings(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveCallLogSyncSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
         }
     }
 

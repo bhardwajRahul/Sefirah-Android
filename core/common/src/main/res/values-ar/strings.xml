@@ -39,10 +39,10 @@
     <string name="notification_sending_title_format">%1$s %2$d %3$s %4$s %5$s</string>
     <string name="notification_receiving_title_format">%1$s %2$d %3$s %4$s %5$s</string>
     <string name="notification_device_connection">Device Connection Status</string>
-    <string name="notification_pairing_request_title">Pairing Request</string>
-    <string name="notification_pairing_request_text">%1$s wants to pair.\nVerification code: %2$s</string>
-    <string name="notification_pairing_approve">Approve</string>
-    <string name="notification_pairing_reject">Reject</string>
+    <string name="pairing_request_title">Pairing Request</string>
+    <string name="pairing_request_text">%1$s wants to pair.\nVerification code: %2$s</string>
+    <string name="pairing_request_approve">Approve</string>
+    <string name="pairing_request_reject">Reject</string>
 
     <!-- Screen Names -->
     <string name="home">Home</string>

@@ -33,7 +33,4 @@ include(":domain")
 include(":data")
 include(":data")
 
-include(":feature:clipboard")
-include(":feature:projection")
-include(":feature:notification")
-include(":feature:communication")
+include(":features")

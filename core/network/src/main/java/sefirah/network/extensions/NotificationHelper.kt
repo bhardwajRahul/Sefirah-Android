@@ -4,7 +4,6 @@ import android.app.PendingIntent
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import sefirah.clipboard.ClipboardChangeActivity
-import sefirah.communication.bluetooth.BluetoothDiscoverableActivity
 import sefirah.common.R
 import sefirah.common.notifications.AppNotifications
 import sefirah.domain.model.PendingDeviceApproval
@@ -48,7 +47,7 @@ fun NetworkService.showPairingVerificationNotification(approval: PendingDeviceAp
     )
 
     val contentText = getString(
-        R.string.notification_pairing_request_text,
+        R.string.pairing_request_text,
         approval.deviceName,
         approval.verificationCode
     )
@@ -57,7 +56,7 @@ fun NetworkService.showPairingVerificationNotification(approval: PendingDeviceAp
         channelId = AppNotifications.PAIRING_REQUEST_CHANNEL,
         notificationId = AppNotifications.PAIRING_REQUEST_ID + approval.deviceId.hashCode(),
     ) {
-        setContentTitle(getString(R.string.notification_pairing_request_title))
+        setContentTitle(getString(R.string.pairing_request_title))
         setContentText(contentText)
         setStyle(NotificationCompat.BigTextStyle().bigText(contentText))
         setContentIntent(mainPendingIntent)
@@ -65,40 +64,13 @@ fun NetworkService.showPairingVerificationNotification(approval: PendingDeviceAp
         setPriority(NotificationCompat.PRIORITY_MAX)
         setCategory(NotificationCompat.CATEGORY_SOCIAL)
         setDefaults(NotificationCompat.DEFAULT_ALL)
-        addAction(R.drawable.ic_launcher_foreground, getString(R.string.notification_pairing_approve), approvePendingIntent)
-        addAction(R.drawable.ic_launcher_foreground, getString(R.string.notification_pairing_reject), rejectPendingIntent)
+        addAction(R.drawable.ic_launcher_foreground, getString(R.string.pairing_request_approve), approvePendingIntent)
+        addAction(R.drawable.ic_launcher_foreground, getString(R.string.pairing_request_reject), rejectPendingIntent)
     }
 }
 
 fun NetworkService.cancelPairingVerificationNotification(deviceId: String) {
     notificationCenter.cancelNotification(AppNotifications.PAIRING_REQUEST_ID + deviceId.hashCode())
-}
-
-fun NetworkService.showBluetoothDiscoverableRequestNotification(sourceDeviceId: String) {
-    val intent = BluetoothDiscoverableActivity.createIntent(this, sourceDeviceId).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-    }
-    val requestCode = sourceDeviceId.hashCode()
-    val contentPendingIntent = PendingIntent.getActivity(
-        this,
-        requestCode,
-        intent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-    )
-
-    notificationCenter.showNotification(
-        channelId = AppNotifications.BLUETOOTH_DISCOVERABLE_CHANNEL,
-        notificationId = AppNotifications.BLUETOOTH_DISCOVERABLE_REQUEST_ID + requestCode,
-    ) {
-        setContentTitle("Allow Bluetooth pairing")
-        val body = "Tap to make this phone discoverable for your desktop."
-        setContentText(body)
-        setStyle(NotificationCompat.BigTextStyle().bigText(body))
-        setContentIntent(contentPendingIntent)
-        setAutoCancel(true)
-        setPriority(NotificationCompat.PRIORITY_HIGH)
-        setCategory(NotificationCompat.CATEGORY_STATUS)
-    }
 }
 
 /**

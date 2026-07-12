@@ -1,7 +1,6 @@
 package sefirah.domain.model
 
 import android.util.Log
-import io.ktor.network.sockets.Socket
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readUTF8Line
@@ -39,7 +38,7 @@ class DeviceConnection(
                         channel.flush()
                     }
                 } catch (ex: Exception) {
-                    Log.e("DeviceConnection", "Failed to send message to $deviceId", ex)
+                    Log.e(TAG, "Failed to send message to $deviceId", ex)
                 }
             }
         }
@@ -55,13 +54,13 @@ class DeviceConnection(
     fun startListening(
         getDevice: suspend (String) -> BaseRemoteDevice?,
         onMessage: (BaseRemoteDevice, SocketMessage) -> Unit,
-        onClose: (DeviceConnection) -> Unit
+        onClose: (DeviceConnection) -> Unit,
     ) {
         // Stop existing listener if any
         listeningJob?.cancel()
-        
+
         val channel = readChannel ?: return
-        
+
         listeningJob = scope.launch {
             try {
                 while (isActive && !channel.isClosedForRead) {
@@ -75,14 +74,13 @@ class DeviceConnection(
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
-                        Log.w("DeviceConnection", "Error while receiving data from device $deviceId", e)
+                        Log.w(TAG, "Read error for $deviceId", e)
                         break
                     }
                 }
             } catch (e: Exception) {
-                Log.e("DeviceConnection", "Session error for device $deviceId", e)
+                Log.e(TAG, "Session error for $deviceId", e)
             } finally {
-                Log.e("DeviceConnection", "Session closed for device $deviceId")
                 onClose(this@DeviceConnection)
             }
         }
@@ -104,5 +102,9 @@ class DeviceConnection(
         sslSocket = null
         readChannel = null
         writeChannel = null
+    }
+
+    private companion object {
+        const val TAG = "DeviceConnection"
     }
 }

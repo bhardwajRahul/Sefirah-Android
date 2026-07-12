@@ -39,7 +39,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,11 +58,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.rememberAsyncImagePainter
 import com.castle.sefirah.presentation.settings.components.SwitchPreferenceWidget
 import com.castle.sefirah.presentation.settings.components.TextPreferenceWidget
-import kotlinx.coroutines.launch
 import sefirah.clipboard.ClipboardListener
 import sefirah.common.R
 import sefirah.common.util.isAccessibilityServiceEnabled
-import sefirah.common.util.isCallLogsPermissionGranted
 import sefirah.common.util.isNotificationListenerEnabled
 import sefirah.common.util.openAppSettings
 import sefirah.domain.model.PairedDevice
@@ -110,9 +107,8 @@ fun DeviceSettingsScreen(
     ) { padding ->
         val context = LocalContext.current
         val lifecycleOwner = LocalLifecycleOwner.current
-        val callLogsPermissionGranted = isCallLogsPermissionGranted(context)
-        
-        // Update permissions on resume
+
+        // Update permissions on resume 
         DisposableEffect(lifecycleOwner.lifecycle) {
             val observer = object : DefaultLifecycleObserver {
                 override fun onResume(owner: LifecycleOwner) {
@@ -125,12 +121,9 @@ fun DeviceSettingsScreen(
             }
         }
 
-        // Permission requesters
-        val telephonyPermissionRequester = rememberLauncherForActivityResult(
+        val callLogPermissionRequester = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
-            onResult = {
-                viewModel.updatePermissionStates()
-            }
+            onResult = { viewModel.updatePermissionStates() }
         )
 
         val phoneCallPermissionRequester = rememberLauncherForActivityResult(
@@ -138,10 +131,15 @@ fun DeviceSettingsScreen(
             onResult = { viewModel.updatePermissionStates() }
         )
 
+        val phoneStatePermissionRequester = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { viewModel.updatePermissionStates() }
+        )
+
         val contactsPermissionRequester = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
             onResult = {
-                telephonyPermissionRequester.launch(Manifest.permission.READ_PHONE_STATE)
+                phoneStatePermissionRequester.launch(Manifest.permission.READ_PHONE_STATE)
             }
         )
 
@@ -283,10 +281,10 @@ fun DeviceSettingsScreen(
                     subtitle = stringResource(R.string.call_log_sync_preference_subtitle),
                     checkedIcon = ImageVector.vectorResource(R.drawable.ic_call_log_fill),
                     uncheckedIcon = ImageVector.vectorResource(R.drawable.ic_call_log),
-                    granted = callLogsPermissionGranted,
-                    checked = preferences.callLogSync && callLogsPermissionGranted,
+                    granted = permissionStates.callLogsGranted,
+                    checked = preferences.callLogSync && permissionStates.callLogsGranted,
                     permission = Manifest.permission.READ_CALL_LOG,
-                    onRequest = { telephonyPermissionRequester.launch(Manifest.permission.READ_CALL_LOG) },
+                    onRequest = { callLogPermissionRequester.launch(Manifest.permission.READ_CALL_LOG) },
                     onCheckedChanged = { checked ->
                         viewModel.saveCallLogSyncSettings(checked)
                     },
@@ -496,20 +494,23 @@ fun SwitchPermissionPrefWidget(
     val context = LocalContext.current
     val activity = context as Activity
     val lifecycleOwner = LocalLifecycleOwner.current
-    val scope = rememberCoroutineScope()
 
     val hasRequestedBefore = permission?.let {
         viewModel.hasRequestedPermission(it).collectAsState(initial = false).value
     } ?: false
 
-    var canShowRationale by remember { mutableStateOf(false) }
+    var canShowRationale by remember(permission) { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner.lifecycle, permission) {
+        fun refreshRationale() {
+            permission?.let {
+                canShowRationale = shouldShowRequestPermissionRationale(activity, it)
+            }
+        }
+        refreshRationale()
         val observer = object : DefaultLifecycleObserver {
             override fun onResume(owner: LifecycleOwner) {
-                permission?.let { 
-                    canShowRationale = shouldShowRequestPermissionRationale(activity, it) 
-                }
+                refreshRationale()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -518,7 +519,8 @@ fun SwitchPermissionPrefWidget(
         }
     }
 
-    val openSettings = permission != null && !granted && !checked && hasRequestedBefore && !canShowRationale
+    // Permanently denied: must open app settings instead of the system dialog
+    val openSettings = permission != null && !granted && hasRequestedBefore && !canShowRationale
 
     SwitchPreferenceWidget(
         title = title,
@@ -527,23 +529,17 @@ fun SwitchPermissionPrefWidget(
         uncheckedIcon = uncheckedIcon,
         checked = checked,
         onCheckedChanged = { isChecked ->
-            if (isChecked) {
-                if (permission != null && !checked) {
-                    if (openSettings) {
-                        openAppSettings(context)
-                    } else {
-                        permission.let { viewModel.savePermissionRequested(it) }
-                        onRequest()
-                    }
+            if (isChecked && !granted) {
+                if (openSettings) {
+                    openAppSettings(context)
                 } else {
+                    permission?.let { viewModel.savePermissionRequested(it) }
                     onRequest()
                 }
+            } else if (isChecked && permission == null) {
+                onRequest()
             }
-
-            scope.launch {
-                viewModel.updatePermissionStates()
-                onCheckedChanged(isChecked)
-            }
+            onCheckedChanged(isChecked)
         },
         onContentClick = onContentClick,
     )

@@ -1,17 +1,13 @@
 package sefirah.network
 
 import android.annotation.SuppressLint
-import android.app.NotificationManager
 import android.app.Service
 import android.app.WallpaperManager
-import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.AudioManager
 import android.net.wifi.WifiManager
-import android.os.BatteryManager
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -35,28 +31,25 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import sefirah.actions.ActionFeature
+import sefirah.apps.AppListHandler
 import sefirah.clipboard.ClipboardHandler
 import sefirah.common.notifications.AppNotifications
 import sefirah.common.notifications.NotificationCenter
-import sefirah.common.util.checkStoragePermission
 import sefirah.common.util.drawableToBase64Compressed
-import sefirah.common.util.isCallLogsPermissionGranted
 import sefirah.common.util.isContactsPermissionGranted
-import sefirah.common.util.smsPermissionGranted
-import sefirah.communication.call.CallLogHelper
-import sefirah.communication.call.CallStateReceiver
-import sefirah.communication.sms.SmsHandler
+import sefirah.communication.bluetooth.BluetoothPairingHandler
+import sefirah.communication.sms.SmsFeature
 import sefirah.communication.utils.ContactsHelper
 import sefirah.communication.utils.TelephonyHelper
 import sefirah.database.AppRepository
 import sefirah.domain.interfaces.DeviceManager
 import sefirah.domain.interfaces.PreferencesRepository
 import sefirah.domain.interfaces.SocketFactory
+import sefirah.FeatureManager
 import sefirah.domain.model.AddressEntry
-import sefirah.domain.model.AudioStreamState
 import sefirah.domain.model.Authentication
 import sefirah.domain.model.BaseRemoteDevice
-import sefirah.domain.model.BatteryState
 import sefirah.domain.model.ClipboardInfo
 import sefirah.domain.model.ConnectionAck
 import sefirah.domain.model.ConnectionDetails
@@ -65,29 +58,27 @@ import sefirah.domain.model.DeviceConnection
 import sefirah.domain.model.DeviceInfo
 import sefirah.domain.model.Disconnect
 import sefirah.domain.model.DiscoveredDevice
-import sefirah.domain.model.DndState
 import sefirah.domain.model.PairMessage
 import sefirah.domain.model.PairedDevice
 import sefirah.domain.model.PendingDeviceApproval
-import sefirah.domain.model.RingerModeState
 import sefirah.domain.model.SocketMessage
 import sefirah.domain.util.MessageSerializer
-import sefirah.network.extensions.ActionHandler
-import sefirah.network.extensions.RemoteDeviceStatusHandler
 import sefirah.network.extensions.cancelPairingVerificationNotification
 import sefirah.network.extensions.handleMessage
 import sefirah.network.extensions.setNotification
-import sefirah.network.transfer.FileTransferService
-import sefirah.network.transfer.SftpServer
+import sefirah.network.extensions.showPairingVerificationNotification
 import sefirah.network.util.SslHelper
-import sefirah.network.util.getInstalledApps
-import sefirah.notification.NotificationService
-import sefirah.projection.media.PlaybackService
-import sefirah.projection.media.RemotePlaybackHandler
+import sefirah.notification.NotificationFeature
+import sefirah.media.PlaybackFeature
+import sefirah.media.RemotePlaybackFeature
+import sefirah.status.DeviceControlHandler
+import sefirah.status.RemoteDeviceStatusFeature
+import sefirah.transfer.FileTransferService
 import java.security.cert.X509Certificate
 import javax.inject.Inject
 import javax.net.ssl.SSLSocket
 import kotlin.properties.Delegates
+import kotlin.time.Duration.Companion.milliseconds
 
 @AndroidEntryPoint
 class NetworkService : Service() {
@@ -95,7 +86,7 @@ class NetworkService : Service() {
 
     @Inject lateinit var appRepository: AppRepository
 
-    @Inject lateinit var notificationHandler: NotificationService
+    @Inject lateinit var notificationFeature: NotificationFeature
 
     @Inject lateinit var notificationCenter: NotificationCenter
 
@@ -103,29 +94,29 @@ class NetworkService : Service() {
 
     @Inject lateinit var networkDiscovery: NetworkDiscovery
 
-    @Inject lateinit var remotePlaybackHandler: RemotePlaybackHandler
+    @Inject lateinit var remotePlaybackFeature: RemotePlaybackFeature
 
-    @Inject lateinit var playbackService: PlaybackService
-
-    @Inject lateinit var sftpServer: SftpServer
+    @Inject lateinit var playbackFeature: PlaybackFeature
 
     @Inject lateinit var preferencesRepository: PreferencesRepository
 
-    @Inject lateinit var smsHandler: SmsHandler
+    @Inject lateinit var smsFeature: SmsFeature
 
-    @Inject lateinit var actionHandler: ActionHandler
+    @Inject lateinit var actionFeature: ActionFeature
 
-    @Inject lateinit var remoteDeviceStatusHandler: RemoteDeviceStatusHandler
+    @Inject lateinit var remoteDeviceStatusFeature: RemoteDeviceStatusFeature
 
     @Inject lateinit var deviceManager: DeviceManager
 
     @Inject lateinit var fileTransferService: FileTransferService
 
-    @Inject lateinit var callStateReceiver: CallStateReceiver
+    @Inject lateinit var featureManager: FeatureManager
 
-    val bluetoothManager by lazy { getSystemService(BLUETOOTH_SERVICE) as BluetoothManager }
-    val audioManager by lazy { getSystemService(AUDIO_SERVICE) as AudioManager }
-    val notificationManager by lazy { getSystemService(NOTIFICATION_SERVICE) as NotificationManager }
+    @Inject lateinit var deviceControlHandler: DeviceControlHandler
+
+    @Inject lateinit var appListHandler: AppListHandler
+
+    @Inject lateinit var bluetoothPairingHandler: BluetoothPairingHandler
 
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val binder = LocalBinder()
@@ -147,8 +138,6 @@ class NetworkService : Service() {
     }
 
     lateinit var notificationBuilder: NotificationCompat.Builder
-
-    private var lastBatteryStatus: BatteryState? = null
 
     private var tcpServerSocket: javax.net.ssl.SSLServerSocket? = null
     private var serverAcceptJob: Job? = null
@@ -220,7 +209,8 @@ class NetworkService : Service() {
             }
 
             Actions.CANCEL_TRANSFER.name -> {
-                val transferId = intent.getStringExtra(EXTRA_TRANSFER_ID) ?: return START_STICKY
+                val transferId = intent.getStringExtra(FileTransferService.EXTRA_TRANSFER_ID)
+                    ?: return START_STICKY
                 fileTransferService.cancelTransfer(transferId)
             }
 
@@ -245,10 +235,7 @@ class NetworkService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        registerReceiver(interruptionFilterReceiver, IntentFilter(NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED))
-        registerReceiver(interruptionFilterReceiver, IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION))
-        registerReceiver(interruptionFilterReceiver, IntentFilter(NotificationManager.ACTION_NOTIFICATION_POLICY_CHANGED))
+        deviceControlHandler.start()
         registerReceiver(screenOnReceiver, IntentFilter(Intent.ACTION_SCREEN_ON))
         registerReceiver(wifiStateReceiver, IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION))
 
@@ -292,7 +279,7 @@ class NetworkService : Service() {
                         } ?: break
 
                         Log.d(TAG, "Accepted incoming connection from ${sslSocket.remoteSocketAddress}")
-                        handleIncomingConnection(sslSocket)
+                        launch { handleIncomingConnection(sslSocket) }
                     } catch (e: Exception) {
                         if (tcpServerSocket?.isClosed == true) {
                             Log.d(TAG, "Server socket closed, stopping acceptance loop")
@@ -312,12 +299,18 @@ class NetworkService : Service() {
 
     private suspend fun handleIncomingConnection(sslSocket: SSLSocket) {
         try {
+            withContext(Dispatchers.IO) {
+                sslSocket.startHandshake()
+            }
+
             val readChannel = sslSocket.inputStream.toByteReadChannel()
             val writeChannel = sslSocket.outputStream.asByteWriteChannel()
 
-            val authMessage = readChannel.readUTF8Line()?.let {
-                val message = MessageSerializer.deserialize(it)
-                message as? Authentication
+            val authMessage = withTimeoutOrNull(10_000.milliseconds) {
+                readChannel.readUTF8Line()?.let {
+                    val message = MessageSerializer.deserialize(it)
+                    message as? Authentication
+                }
             } ?: run {
                 Log.e(TAG, "Timeout waiting for Authentication message from incoming connection")
                 sslSocket.close()
@@ -497,7 +490,7 @@ class NetworkService : Service() {
             sendAuthMessage(writeChannel)
 
             val authResponse = try {
-                withTimeoutOrNull(3000) {
+                withTimeoutOrNull(3000.milliseconds) {
                     readChannel.readUTF8Line()?.let {
                         MessageSerializer.deserialize(it) as? Authentication
                     }
@@ -581,17 +574,69 @@ class NetworkService : Service() {
     }
 
     suspend fun disconnectDevice(device: PairedDevice, forcedDisconnect: Boolean = false) {
-        deviceManager.addOrUpdatePairedDevice(device.copy(connectionState = ConnectionState.Disconnected(forcedDisconnect)))
-        removeConnection(device.deviceId)
+        Log.i(TAG, "Disconnected ${device.deviceName}")
 
-        remotePlaybackHandler.clearDeviceData(device.deviceId)
-        actionHandler.clearDeviceActions(device.deviceId)
-        remoteDeviceStatusHandler.clearDeviceStatus(device.deviceId)
+        deviceManager.addOrUpdatePairedDevice(device.copy(connectionState = ConnectionState.Disconnected(forcedDisconnect)))
+        featureManager.onDisconnect(device.deviceId)
+        removeConnection(device.deviceId)
     }
 
     private suspend fun disconnectDevice(device: DiscoveredDevice) {
+        Log.i(TAG, "Disconnected ${device.deviceName}")
         deviceManager.removeDiscoveredDevice(device.deviceId)
         removeConnection(device.deviceId)
+    }
+
+    suspend fun handlePairMessage(device: DiscoveredDevice, message: PairMessage) {
+        if (message.pair) {
+            // Check if this is a response to our pairing request
+            if (device.isPairing) {
+                val pairedDevice = PairedDevice(
+                    deviceId = device.deviceId,
+                    deviceName = device.deviceName,
+                    avatar = null,
+                    lastConnected = System.currentTimeMillis(),
+                    addresses = device.addresses.map { AddressEntry(it) },
+                    address = device.address,
+                    connectionState = ConnectionState.Connected,
+                    certificate = device.certificate.encoded,
+                    port = device.port,
+                )
+
+                deviceManager.removeDiscoveredDevice(device.deviceId)
+                deviceManager.addOrUpdatePairedDevice(pairedDevice)
+                sendMessage(device.deviceId, ConnectionAck)
+                Log.d(TAG, "Created PairedDevice ${device.deviceId} after pairing approval")
+
+                finalizeConnection(pairedDevice, true)
+            } else {
+                // Remote device is requesting to pair with us
+                val pendingApproval = PendingDeviceApproval(
+                    device.deviceId,
+                    device.deviceName,
+                    device.verificationCode
+                )
+                emitPendingApproval(pendingApproval)
+                showPairingVerificationNotification(pendingApproval)
+            }
+        } else {
+            // Pairing rejected
+            if (device.isPairing) {
+                // They rejected our pairing request - update isPairing to false
+                val updatedDevice = device.copy(isPairing = false)
+                deviceManager.addOrUpdateDiscoveredDevice(updatedDevice)
+                Log.d(TAG, "Pairing rejected by ${device.deviceId}")
+            }
+        }
+    }
+
+    suspend fun handleDeviceInfo(deviceInfo: DeviceInfo, device: PairedDevice) {
+        val updatedDevice = device.copy(
+            deviceName = deviceInfo.deviceName,
+            avatar = deviceInfo.avatar
+        )
+        deviceManager.addOrUpdatePairedDevice(updatedDevice)
+        Log.d(TAG, "DeviceInfo updated for ${device.deviceId}")
     }
 
     fun broadcastMessage(message: SocketMessage) {
@@ -640,41 +685,16 @@ class NetworkService : Service() {
         isNewDevice: Boolean,
     ) {
         sendDeviceInfo(device)
-        sendDeviceStatus(device.deviceId)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-            && preferencesRepository.readRemoteStorageSettingsForDevice(device.deviceId).first()
-            && checkStoragePermission(this)
-        ) {
-            sftpServer.initialize()
-            sftpServer.start()?.let { sendMessage(device.deviceId, it) }
-        }
-
-        if (preferencesRepository.readNotificationSyncSettingsForDevice(device.deviceId).first()) {
-            notificationHandler.sendActiveNotifications(device.deviceId)
-        }
-
-        playbackService.sendActiveSessions(device.deviceId)
+        deviceControlHandler.sendDeviceStatus(device.deviceId)
 
         if (isNewDevice) {
-            sendInstalledApps(device)
+            appListHandler.sendInstalledApps(device.deviceId)
             sendContacts(device)
         }
 
-        if (preferencesRepository.readCallLogSyncSettingsForDevice(device.deviceId).first()
-            && isCallLogsPermissionGranted(this)) {
-            CallLogHelper.getCallLogs(this).forEach {
-                sendMessage(device.deviceId, it)
-            }
-        }
-
-        if (preferencesRepository.readMessageSyncSettingsForDevice(device.deviceId).first()
-            && smsPermissionGranted(this)
-        ) {
-            smsHandler.sendAllConversations(device.deviceId)
-        }
-
         networkDiscovery.saveCurrentNetworkAsTrusted()
+
+        featureManager.onConnect(device.deviceId)
     }
 
     private suspend fun sendAuthMessage(writeChannel: ByteWriteChannel) {
@@ -690,47 +710,6 @@ class NetworkService : Service() {
         writeChannel.flush()
     }
 
-    private fun broadcastBatteryStatus() {
-        scope.launch {
-            val batteryStatus = getBatteryStatus()
-            if (batteryStatus != lastBatteryStatus) {
-                broadcastMessage(batteryStatus)
-                lastBatteryStatus = batteryStatus
-            }
-        }
-    }
-
-    private fun broadcastRingerMode() {
-       broadcastMessage(RingerModeState(audioManager.ringerMode))
-    }
-
-    private fun broadcastDndStatus() {
-        val dndStatus = getDndStatus()
-        broadcastMessage(dndStatus)
-    }
-
-    private fun sendDeviceStatus(deviceId: String) {
-        val batteryStatus = getBatteryStatus()
-        val ringerMode = RingerModeState(audioManager.ringerMode)
-        val dndStatus = getDndStatus()
-
-        sendMessage(deviceId, batteryStatus)
-        sendMessage(deviceId, ringerMode)
-        sendMessage(deviceId, dndStatus)
-
-        getAudioLevels().forEach { audioLevel ->
-            sendMessage(deviceId, audioLevel)
-        }
-
-        lastBatteryStatus = batteryStatus
-    }
-
-    private fun sendInstalledApps(device: PairedDevice) {
-        getInstalledApps(packageManager).forEach {
-            sendMessage(device.deviceId, it)
-        }
-    }
-
     private fun sendContacts(device: PairedDevice) {
         try {
             if (!isContactsPermissionGranted(this)) return
@@ -743,22 +722,6 @@ class NetworkService : Service() {
         }
     }
 
-    private val batteryReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            broadcastBatteryStatus()
-        }
-    }
-
-    private val interruptionFilterReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED,
-                NotificationManager.ACTION_NOTIFICATION_POLICY_CHANGED -> broadcastDndStatus()
-                AudioManager.RINGER_MODE_CHANGED_ACTION -> broadcastRingerMode()
-            }
-        }
-    }
-
     private val screenOnReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             networkDiscovery.broadcastDevice()
@@ -768,33 +731,6 @@ class NetworkService : Service() {
     private val wifiStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             networkDiscovery.broadcastDevice()
-        }
-    }
-
-    private fun getBatteryStatus(): BatteryState {
-        val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        val batteryLevel = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: 0
-        val isCharging = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING
-        return BatteryState(batteryLevel, isCharging)
-    }
-
-    private fun getDndStatus(): DndState {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        val isDndEnabled = notificationManager.currentInterruptionFilter != NotificationManager.INTERRUPTION_FILTER_ALL
-        return DndState(isDndEnabled)
-    }
-
-    private fun getAudioLevels(): List<AudioStreamState> {
-        val streamTypes = listOf(
-            AudioManager.STREAM_VOICE_CALL,
-            AudioManager.STREAM_RING,
-            AudioManager.STREAM_MUSIC,
-            AudioManager.STREAM_ALARM,
-            AudioManager.STREAM_NOTIFICATION,
-        )
-        return streamTypes.map { streamType ->
-            val level = 100 * audioManager.getStreamVolume(streamType) / audioManager.getStreamMaxVolume(streamType)
-            AudioStreamState(streamType, level)
         }
     }
 
@@ -879,16 +815,13 @@ class NetworkService : Service() {
 
         scope.cancel()
 
-        unregisterReceiver(batteryReceiver)
-        unregisterReceiver(interruptionFilterReceiver)
         unregisterReceiver(screenOnReceiver)
         unregisterReceiver(wifiStateReceiver)
-        callStateReceiver.unregister(this)
+        deviceControlHandler.stop()
         networkDiscovery.unregister()
 
-        sftpServer.stop()
-        remotePlaybackHandler.release()
-        smsHandler.stop()
+        remotePlaybackFeature.release()
+        smsFeature.stop()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -914,6 +847,5 @@ class NetworkService : Service() {
         const val TAG = "NetworkService"
         const val DEVICE_ID_EXTRA = "device_id"
         const val EXTRA_CONNECTION_DETAILS = "extra_connection_details"
-        const val EXTRA_TRANSFER_ID = "extra_transfer_id"
     }
 }

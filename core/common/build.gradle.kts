@@ -20,4 +20,6 @@ dependencies {
 
     implementation(libs.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.bcpkix.jdk18on)
 }

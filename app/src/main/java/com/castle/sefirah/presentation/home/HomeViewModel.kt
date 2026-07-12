@@ -17,38 +17,38 @@ import sefirah.domain.model.PlaybackInfo
 import sefirah.domain.model.SocketMessage
 import sefirah.domain.interfaces.DeviceManager
 import sefirah.domain.interfaces.NetworkManager
-import sefirah.projection.media.RemotePlaybackHandler
-import sefirah.network.extensions.ActionHandler
-import sefirah.network.extensions.RemoteDeviceStatusHandler
+import sefirah.actions.ActionFeature
+import sefirah.media.RemotePlaybackFeature
+import sefirah.status.RemoteDeviceStatusFeature
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val remotePlaybackHandler: RemotePlaybackHandler,
+    private val remotePlaybackFeature: RemotePlaybackFeature,
     private val deviceManager: DeviceManager,
     private val networkManager: NetworkManager,
-    actionHandler: ActionHandler,
-    remoteDeviceStatusHandler: RemoteDeviceStatusHandler
+    actionFeature: ActionFeature,
+    remoteDeviceStatusFeature: RemoteDeviceStatusFeature
 ) : ViewModel() {
 
     val batteryByDevice: StateFlow<Map<String, BatteryState>> =
-        remoteDeviceStatusHandler.batteryByDevice
+        remoteDeviceStatusFeature.batteryByDevice
 
     val activeSessions: StateFlow<List<PlaybackInfo>> = deviceManager.selectedDeviceId
         .flatMapLatest { deviceId ->
-            remotePlaybackHandler.activeSessionsByDevice.map { it[deviceId] ?: emptyList() }
+            remotePlaybackFeature.activeSessionsByDevice.map { it[deviceId] ?: emptyList() }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val audioDevices: StateFlow<List<AudioDeviceInfo>> = deviceManager.selectedDeviceId
         .flatMapLatest { deviceId ->
-            remotePlaybackHandler.audioDevicesByDevice.map { it[deviceId] ?: emptyList() }
+            remotePlaybackFeature.audioDevicesByDevice.map { it[deviceId] ?: emptyList() }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val actions: StateFlow<List<ActionInfo>> = deviceManager.selectedDeviceId
         .flatMapLatest { deviceId ->
-            actionHandler.actionsByDevice.map { it[deviceId] ?: emptyList() }
+            actionFeature.actionsByDevice.map { it[deviceId] ?: emptyList() }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

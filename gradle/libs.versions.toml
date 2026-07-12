@@ -46,7 +46,7 @@ okhttp = "2.5.0"
 
 # Security
 bcpkixJdk18on = "1.79"
-guava = "33.3.1-jre"
+guava = "33.3.1-android"
 
 # Kotlin Extensions
 kotlinxCoroutines = "1.9.0"

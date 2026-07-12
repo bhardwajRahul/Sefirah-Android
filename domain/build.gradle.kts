@@ -11,6 +11,7 @@ android {
 dependencies {
     implementation(libs.bundles.ktor)
 
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.core.ktx)
     implementation(libs.androidx.appcompat)

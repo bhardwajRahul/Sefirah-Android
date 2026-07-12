@@ -9,12 +9,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import sefirah.domain.interfaces.SocketFactory
-import sefirah.network.util.NetworkHelper.localAddress
 import sefirah.network.util.SslHelper
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.net.ssl.SSLServerSocket
 import javax.net.ssl.SSLSocket
+import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
 class SocketFactoryImpl @Inject constructor() : SocketFactory {
@@ -24,7 +24,7 @@ class SocketFactoryImpl @Inject constructor() : SocketFactory {
         return try {
             Log.d(TAG, "Connecting to $address:$port")
             val sslContext = SslHelper.sslContext(certificate)
-            withTimeoutOrNull(3000L) {
+            withTimeoutOrNull(3000L.milliseconds) {
                 withContext(Dispatchers.IO) {
                     (sslContext.socketFactory.createSocket(address, port) as SSLSocket).apply {
                         startHandshake()
@@ -53,7 +53,7 @@ class SocketFactoryImpl @Inject constructor() : SocketFactory {
 
                 serverSocket.needClientAuth = true
 
-                Log.d(TAG, "Server socket created on ${localAddress}:${port}")
+                Log.d(TAG, "Server socket created on ${serverSocket.inetAddress.address}:${port}")
                 return serverSocket
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to create server socket on port $port", e)

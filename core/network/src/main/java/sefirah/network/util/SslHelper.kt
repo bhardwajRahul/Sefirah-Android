@@ -4,8 +4,9 @@ import android.annotation.SuppressLint
 import android.util.Base64
 import kotlinx.coroutines.runBlocking
 import org.bouncycastle.util.Arrays
+import sefirah.common.util.CryptoUtils
+import sefirah.common.util.getDeviceKeyStore
 import java.io.ByteArrayInputStream
-import java.security.KeyStore
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.cert.Certificate
@@ -73,19 +74,9 @@ object SslHelper {
         }
     }
 
-    fun getKeyStore(): KeyStore {
-        certificate // ensure our cert exists in AndroidKeyStore before loading
-        return KeyStore.getInstance("AndroidKeyStore").apply {
-            load(null)
-            if (!containsAlias(CryptoUtils.KEY_ALIAS)) {
-                throw IllegalStateException("Failed to initialize SFTP certificate")
-            }
-        }
-    }
-
     private fun createKeyManagerFactory(): KeyManagerFactory {
         return KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()).apply {
-            init(getKeyStore(), null)
+            init(getDeviceKeyStore(), null)
         }
     }
 
