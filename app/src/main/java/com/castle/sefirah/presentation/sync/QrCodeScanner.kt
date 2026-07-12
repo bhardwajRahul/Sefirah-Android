@@ -2,6 +2,7 @@ package com.castle.sefirah.presentation.sync
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -43,10 +44,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
-import com.castle.sefirah.navigation.SyncRoute
 import sefirah.network.util.QrCodeParser
 import zxingcpp.BarcodeReader
 import java.util.concurrent.Executors
@@ -57,6 +58,7 @@ fun QrCodeScanner(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val syncViewModel: SyncViewModel = hiltViewModel(context as ComponentActivity)
     val lifecycleOwner = LocalLifecycleOwner.current
     var hasCameraPermission by remember { mutableStateOf(false) }
     var permissionDenied by remember { mutableStateOf(false) }
@@ -97,14 +99,9 @@ fun QrCodeScanner(
                 Box(modifier = Modifier.fillMaxSize()) {
                     CameraPreview(
                         onQrCodeScanned = { qrCodeData ->
-                            // Parse QR code and navigate back to SyncScreen with the parsed data
                             QrCodeParser.parseQrCode(qrCodeData)?.let { parsedData ->
-                                runCatching {
-                                    rootNavController.getBackStackEntry(SyncRoute.SyncScreen.route)
-                                }.getOrNull()?.let { syncScreenEntry ->
-                                    syncScreenEntry.savedStateHandle["qr_code_result"] = parsedData
-                                    rootNavController.popBackStack(SyncRoute.SyncScreen.route, inclusive = false)
-                                }
+                                syncViewModel.showQrConnection(parsedData)
+                                rootNavController.popBackStack()
                             }
                         },
                         lifecycleOwner

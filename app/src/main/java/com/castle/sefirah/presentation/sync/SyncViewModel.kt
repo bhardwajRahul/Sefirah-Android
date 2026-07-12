@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,6 +19,7 @@ import android.util.Log
 import sefirah.domain.model.ConnectionDetails
 import sefirah.domain.model.DiscoveredDevice
 import sefirah.domain.model.PairMessage
+import sefirah.domain.model.QrCodeConnectionData
 import sefirah.domain.interfaces.DeviceManager
 import sefirah.domain.interfaces.NetworkManager
 import sefirah.network.NetworkDiscovery
@@ -36,6 +38,17 @@ class SyncViewModel @Inject constructor(
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+    private val _pendingQrConnection = MutableStateFlow<QrCodeConnectionData?>(null)
+    val pendingQrConnection: StateFlow<QrCodeConnectionData?> = _pendingQrConnection.asStateFlow()
+
+    fun showQrConnection(connectionData: QrCodeConnectionData) {
+        _pendingQrConnection.value = connectionData
+    }
+
+    fun dismissQrConnection() {
+        _pendingQrConnection.value = null
+    }
 
     fun pair(device: DiscoveredDevice, rootNavController: NavController) {
         // Cancel previous navigation job if any
@@ -89,6 +102,7 @@ class SyncViewModel @Inject constructor(
     }
 
     fun connectFromQrCode(connectionDetails: ConnectionDetails, rootNavController: NavController) {
+        dismissQrConnection()
         viewModelScope.launch {
             try {
                 // Connect to the device

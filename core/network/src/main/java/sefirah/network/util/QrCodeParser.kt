@@ -1,19 +1,41 @@
 package sefirah.network.util
 
+import android.net.Uri
 import android.util.Log
 import kotlinx.serialization.json.Json
 import sefirah.domain.model.ConnectionDetails
 import sefirah.domain.model.QrCodeConnectionData
+import androidx.core.net.toUri
 
 object QrCodeParser {
     private const val TAG = "QrCodeParser"
-    private val json = Json { ignoreUnknownKeys = true }
+    const val SCHEME = "sefirah"
+    const val PAIR_HOST = "pair"
+    const val DATA_QUERY_KEY = "data"
 
-    fun parseQrCode(qrCodeData: String): QrCodeConnectionData? {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
+
+    fun parseQrCode(qrCodeData: String): QrCodeConnectionData? =
+        parsePairDeepLink(qrCodeData.trim().toUri())
+
+    fun parsePairDeepLink(uri: Uri): QrCodeConnectionData? {
+        if (uri.scheme != SCHEME || uri.host != PAIR_HOST) {
+            return null
+        }
+
+        val payload = uri.getQueryParameter(DATA_QUERY_KEY)
+        if (payload.isNullOrBlank()) {
+            Log.e(TAG, "Missing data query parameter: $uri")
+            return null
+        }
+
         return try {
-            json.decodeFromString<QrCodeConnectionData>(qrCodeData)
+            json.decodeFromString<QrCodeConnectionData>(payload)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to parse QR code data: $qrCodeData", e)
+            Log.e(TAG, "Failed to parse pair deep link payload: $payload", e)
             null
         }
     }

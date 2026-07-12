@@ -60,12 +60,19 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.Sefirah.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="sefirah" android:host="pair" />
             </intent-filter>
         </activity>
 
@@ -123,7 +130,7 @@
         </service>
 
         <service
-            android:name="sefirah.network.ClipboardTileService"
+            android:name="sefirah.clipboard.ClipboardTileService"
             android:exported="true"
             android:label="@string/send_clipboard"
             android:icon="@drawable/ic_content_copy"
@@ -155,7 +162,7 @@
                 android:resource="@xml/clipservice" />
         </service>
 
-        <receiver android:name="sefirah.projection.media.MediaActionReceiver"
+        <receiver android:name="sefirah.media.MediaActionReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />

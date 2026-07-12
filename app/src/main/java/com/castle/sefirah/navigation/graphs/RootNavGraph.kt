@@ -1,9 +1,9 @@
 package com.castle.sefirah.navigation.graphs
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.castle.sefirah.navigation.Graph
 import com.castle.sefirah.navigation.OnboardingRoute
 import com.castle.sefirah.navigation.SyncRoute
@@ -14,9 +14,10 @@ import com.castle.sefirah.presentation.sync.QrCodeScanner
 import com.castle.sefirah.presentation.sync.SyncScreen
 
 @Composable
-fun RootNavGraph(startDestination: String) {
-    val rootNavController = rememberNavController()
-
+fun RootNavGraph(
+    startDestination: String,
+    rootNavController: NavHostController,
+) {
     NavHost(
         navController = rootNavController,
         route = Graph.RootGraph,
