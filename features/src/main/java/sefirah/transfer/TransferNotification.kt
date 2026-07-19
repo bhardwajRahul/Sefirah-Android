@@ -4,30 +4,27 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import sefirah.common.R
 import sefirah.common.notifications.AppNotifications
 import sefirah.common.notifications.NotificationCenter
-import javax.inject.Inject
-import javax.inject.Singleton
+import sefirah.transfer.util.formatSize
 
 /**
- * Handles file transfer notifications.
- * Only responsible for displaying notifications, not formatting strings.
+ * Per-transfer notification owned by a send/receive handler.
+ * Only mutates/posts notifications; callers format strings.
  */
-@Singleton
-class TransferNotificationHelper @Inject constructor(
+internal class TransferNotification(
     private val context: Context,
+    private val transferId: String,
     private val notificationCenter: NotificationCenter
 ) {
-    private val builders = mutableMapOf<String, NotificationCompat.Builder>()
+    private val notificationId = transferId.hashCode()
+    private var builder: NotificationCompat.Builder? = null
+    private var lastProgressUpdateMs = 0L
 
-    fun showProgress(
-        transferId: String,
-        title: String
-    ) {
-        val notificationId = transferId.hashCode()
-
+    fun showPreparing(title: String) {
         val cancelIntent = Intent().apply {
             setClassName(context.packageName, NETWORK_SERVICE_CLASS)
             action = FileTransferService.ACTION_CANCEL_TRANSFER
@@ -40,7 +37,7 @@ class TransferNotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val builder = notificationCenter.showNotification(
+        builder = notificationCenter.showNotification(
             channelId = AppNotifications.TRANSFER_PROGRESS_CHANNEL,
             notificationId = notificationId
         ) {
@@ -52,35 +49,51 @@ class TransferNotificationHelper @Inject constructor(
             setAutoCancel(false)
             addAction(R.drawable.ic_close, context.getString(R.string.cancel), cancelPendingIntent)
         }
-        builders[transferId] = builder
     }
 
     fun updateProgress(
-        transferId: String,
-        title: String,
-        subText: String,
-        contentText: String,
-        progress: Int
+        bytesTransferred: Long,
+        totalBytes: Long,
+        fileName: String,
+        fileIndex: Int,
+        fileCount: Int
     ) {
-        val builder = builders[transferId] ?: return
-        val notificationId = transferId.hashCode()
-
-        notificationCenter.modifyNotification(builder, notificationId) {
-            setContentTitle(title)
-            setSubText(subText)
-            setContentText(contentText)
-            setProgress(100, progress, false)
+        val current = builder ?: return
+        val progress = if (totalBytes > 0) {
+            ((bytesTransferred.toFloat() / totalBytes) * 100).toInt()
+        } else {
+            0
         }
+        val now = SystemClock.elapsedRealtime()
+        if (progress != 100 && now - lastProgressUpdateMs < PROGRESS_UPDATE_INTERVAL_MS) {
+            return
+        }
+        lastProgressUpdateMs = now
+
+        val fileInfo = if (fileCount > 1) {
+            "$fileName ($fileIndex/$fileCount)"
+        } else {
+            fileName
+        }
+        val progressText = context.getString(
+            R.string.notification_progress_format,
+            progress,
+            formatSize(bytesTransferred),
+            formatSize(totalBytes)
+        )
+
+        current.setContentText(fileInfo)
+        current.setSubText(progressText)
+        current.setProgress(100, progress, false)
+        notificationCenter.modifyNotification(current, notificationId) {}
     }
 
     fun showCompleted(
-        transferId: String,
         fileCount: Int,
         fileUri: Uri? = null,
         mimeType: String? = null
     ) {
-        val notificationId = transferId.hashCode()
-        builders.remove(transferId)
+        builder = null
         notificationCenter.cancelNotification(notificationId)
 
         val contentText = if (fileCount > 1) {
@@ -113,9 +126,8 @@ class TransferNotificationHelper @Inject constructor(
         }
     }
 
-    fun showError(transferId: String, error: String) {
-        val notificationId = transferId.hashCode()
-        builders.remove(transferId)
+    fun showError(error: String) {
+        builder = null
         notificationCenter.cancelNotification(notificationId)
 
         notificationCenter.showNotification(
@@ -130,13 +142,13 @@ class TransferNotificationHelper @Inject constructor(
         }
     }
 
-    fun cancel(transferId: String) {
-        val notificationId = transferId.hashCode()
-        builders.remove(transferId)
+    fun cancel() {
+        builder = null
         notificationCenter.cancelNotification(notificationId)
     }
 
     companion object {
-        const val NETWORK_SERVICE_CLASS = "sefirah.network.NetworkService"
+        private const val NETWORK_SERVICE_CLASS = "sefirah.network.NetworkService"
+        private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
     }
 }

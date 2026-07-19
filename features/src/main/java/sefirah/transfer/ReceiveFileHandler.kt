@@ -15,21 +15,22 @@ import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.streams.asByteWriteChannel
 import io.ktor.utils.io.writeStringUtf8
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import sefirah.common.R
+import sefirah.common.notifications.NotificationCenter
 import sefirah.common.util.createTempFileUri
 import sefirah.domain.interfaces.PreferencesRepository
 import sefirah.domain.model.FileMetadata
-import sefirah.transfer.util.formatSize
 import java.io.File
 import java.io.IOException
 import javax.net.ssl.SSLSocket
 
 /**
  * Handles receiving files from a remote device.
- * @param notifications Optional notification helper. If null, no notifications are shown (e.g., clipboard transfers).
+ * @param notificationCenter If null, no notifications are shown (e.g., clipboard transfers).
  */
 class ReceiveFileHandler(
     private val context: Context,
@@ -38,22 +39,26 @@ class ReceiveFileHandler(
     private val files: List<FileMetadata>,
     private val deviceName: String,
     private val preferencesRepository: PreferencesRepository? = null,
-    private val notifications: TransferNotificationHelper? = null
+    notificationCenter: NotificationCenter? = null
 ) {
     val totalBytes: Long = files.sumOf { it.fileSize }
     private var totalBytesReceived: Long = 0
-    
+
     var lastFileUri: Uri? = null
         private set
 
-    private val isSilent: Boolean get() = notifications == null
+    private val notification: TransferNotification? = notificationCenter?.let {
+        TransferNotification(context, transferId, it)
+    }
+
+    private val isSilent: Boolean get() = notification == null
 
     suspend fun receive(): Uri? {
         val readChannel = clientSocket.inputStream.toByteReadChannel()
         val writeChannel = clientSocket.outputStream.asByteWriteChannel()
 
         try {
-            notifications?.let {
+            notification?.let {
                 val title = context.getString(
                     R.string.notification_receiving_title_format,
                     context.getString(R.string.notification_receiving_action),
@@ -66,8 +71,7 @@ class ReceiveFileHandler(
                     context.getString(R.string.notification_from),
                     deviceName
                 )
-                
-                it.showProgress(transferId = transferId, title = title)
+                it.showPreparing(title)
             }
 
             files.forEachIndexed { index, metadata ->
@@ -76,19 +80,19 @@ class ReceiveFileHandler(
                 lastFileUri = receiveFile(readChannel, writeChannel, metadata, index + 1)
             }
 
-            notifications?.showCompleted(
-                transferId,
+            notification?.showCompleted(
                 files.size,
                 fileUri = if (files.size == 1) lastFileUri else null,
                 mimeType = if (files.size == 1) files.first().mimeType else null
             )
 
             return lastFileUri
+        } catch (e: CancellationException) {
+            notification?.cancel()
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Receive failed", e)
-            if (e !is kotlinx.coroutines.CancellationException) {
-                notifications?.showError(transferId, e.message ?: "Transfer failed")
-            }
+            notification?.showError(e.message ?: "Transfer failed")
             throw e
         } finally {
             readChannel.cancel()
@@ -104,12 +108,12 @@ class ReceiveFileHandler(
         fileIndex: Int
     ): Uri {
         val fileUri = createOutputUri(metadata)
-        
+
         try {
             // Send "start" message to indicate we're ready to receive this file
             writeChannel.writeStringUtf8("start")
             writeChannel.flush()
-            
+
             context.contentResolver.openOutputStream(fileUri)?.use { output ->
                 var currentFileReceived = 0L
                 val buffer = ByteArray(BUFFER_SIZE)
@@ -125,42 +129,13 @@ class ReceiveFileHandler(
                     currentFileReceived += bytesRead
                     totalBytesReceived += bytesRead
 
-                    notifications?.let {
-                        val progress = ((totalBytesReceived.toFloat() / totalBytes) * 100).toInt()
-                        val title = context.getString(
-                            R.string.notification_receiving_title_format,
-                            context.getString(R.string.notification_receiving_action),
-                            files.size,
-                            if (files.size == 1) {
-                                context.getString(R.string.notification_file)
-                            } else {
-                                context.getString(R.string.notification_files)
-                            },
-                            context.getString(R.string.notification_from),
-                            deviceName
-                        )
-                        
-                        val fileInfo = if (files.size > 1) {
-                            "${metadata.fileName} ($fileIndex/${files.size})"
-                        } else {
-                            metadata.fileName
-                        }
-                        
-                        val progressText = context.getString(
-                            R.string.notification_progress_format,
-                            progress,
-                            formatSize(totalBytesReceived),
-                            formatSize(totalBytes)
-                        )
-
-                        it.updateProgress(
-                            transferId = transferId,
-                            title = title,
-                            subText = progressText,
-                            contentText = fileInfo,
-                            progress = progress
-                        )
-                    }
+                    notification?.updateProgress(
+                        bytesTransferred = totalBytesReceived,
+                        totalBytes = totalBytes,
+                        fileName = metadata.fileName,
+                        fileIndex = fileIndex,
+                        fileCount = files.size
+                    )
                 }
 
                 if (currentFileReceived != metadata.fileSize) {
@@ -170,7 +145,7 @@ class ReceiveFileHandler(
                 writeChannel.writeStringUtf8(SendFileHandler.TRANSFER_COMPLETE_MESSAGE)
                 writeChannel.flush()
             } ?: throw IOException("Failed to open output stream")
-            
+
             return fileUri
         } catch (e: Exception) {
             try { context.contentResolver.delete(fileUri, null, null) }
@@ -185,7 +160,7 @@ class ReceiveFileHandler(
             val extension = metadata.fileName.substringAfterLast('.', "")
             return createTempFileUri(context, "sefirah_clipboard", extension)
         }
-        
+
         // Normal mode -> storage location or Downloads
         return when {
             preferencesRepository?.getStorageLocation()?.first()?.isNotEmpty() == true -> {

@@ -8,14 +8,15 @@ import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.streams.asByteWriteChannel
 import io.ktor.utils.io.writeFully
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import sefirah.common.R
+import sefirah.common.notifications.NotificationCenter
 import sefirah.domain.model.FileMetadata
-import sefirah.transfer.util.formatSize
 import java.io.IOException
 import javax.net.ssl.SSLServerSocket
 import javax.net.ssl.SSLSocket
@@ -26,15 +27,17 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 class SendFileHandler(
     private val context: Context,
-    private val transferId: String,
+    transferId: String,
     private val serverSocket: SSLServerSocket,
     private val fileUris: List<Uri>,
     private val filesMetadata: List<FileMetadata>,
     private val deviceName: String,
-    private val notifications: TransferNotificationHelper
+    notificationCenter: NotificationCenter
 ) {
     val totalBytes: Long = filesMetadata.sumOf { it.fileSize }
     private var totalBytesTransferred: Long = 0
+
+    private val notification = TransferNotification(context, transferId, notificationCenter)
 
     suspend fun send() {
         var sslSocket: SSLSocket? = null
@@ -52,7 +55,7 @@ class SendFileHandler(
                 deviceName
             )
 
-            notifications.showProgress(transferId = transferId, title = title)
+            notification.showPreparing(title)
 
             sslSocket = withContext(Dispatchers.IO) {
                 serverSocket.accept() as? SSLSocket
@@ -81,39 +84,12 @@ class SendFileHandler(
                         writeChannel.flush()
                         totalBytesTransferred += bytesRead
 
-                        val progress = ((totalBytesTransferred.toFloat() / totalBytes) * 100).toInt()
-                        val progressTitle = context.getString(
-                            R.string.notification_sending_title_format,
-                            context.getString(R.string.notification_sending_action),
-                            fileUris.size,
-                            if (fileUris.size == 1) {
-                                context.getString(R.string.notification_file)
-                            } else {
-                                context.getString(R.string.notification_files)
-                            },
-                            context.getString(R.string.notification_to),
-                            deviceName
-                        )
-
-                        val fileInfo = if (fileUris.size > 1) {
-                            "${metadata.fileName} (${index + 1}/${fileUris.size})"
-                        } else {
-                            metadata.fileName
-                        }
-
-                        val progressText = context.getString(
-                            R.string.notification_progress_format,
-                            progress,
-                            formatSize(totalBytesTransferred),
-                            formatSize(totalBytes)
-                        )
-
-                        notifications.updateProgress(
-                            transferId = transferId,
-                            title = progressTitle,
-                            subText = progressText,
-                            contentText = fileInfo,
-                            progress = progress
+                        notification.updateProgress(
+                            bytesTransferred = totalBytesTransferred,
+                            totalBytes = totalBytes,
+                            fileName = metadata.fileName,
+                            fileIndex = index + 1,
+                            fileCount = fileUris.size
                         )
                     }
                 }
@@ -124,15 +100,16 @@ class SendFileHandler(
                 }
             }
 
-            notifications.showCompleted(transferId, fileUris.size)
+            notification.showCompleted(fileUris.size)
 
             writeChannel.flushAndClose()
             readChannel.cancel()
+        } catch (e: CancellationException) {
+            notification.cancel()
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Send failed", e)
-            if (e !is kotlinx.coroutines.CancellationException) {
-                notifications.showError(transferId, e.message ?: "Transfer failed")
-            }
+            notification.showError(e.message ?: "Transfer failed")
             throw e
         } finally {
             sslSocket?.close()
