@@ -9,7 +9,6 @@ package sefirah.clipboard
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,34 +17,28 @@ import kotlinx.coroutines.launch
 import sefirah.domain.interfaces.NetworkManager
 import sefirah.domain.model.ClipboardInfo
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @AndroidEntryPoint
 class ClipboardChangeActivity : FragmentActivity() {
     @Inject lateinit var networkManager: NetworkManager
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
-        val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-        lifecycleScope.launch {
-            /** Seems like adding a delay is giving [ClipboardManager] time to capture
-             *  clipboard text.
-             */
-            delay(500)
-            if (hasFocus) {
-                val data = clipboardManager.primaryClip?.getItemAt(0)?.text.toString()
-                networkManager.sendClipboardMessage(ClipboardInfo("text/plain", data))
-                finish()
-            }
-        }
         super.onWindowFocusChanged(hasFocus)
-    }
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
+        if (!hasFocus) return
 
-        onWindowFocusChanged(true)
-    }
+        lifecycleScope.launch {
+            /** Delay gives [ClipboardManager] time to capture clipboard text. */
+            delay(500.milliseconds)
+            if (!hasWindowFocus()) return@launch
 
-    override fun onDestroy() {
-        super.onDestroy()
+            val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val data = clipboardManager.primaryClip?.getItemAt(0)?.text?.toString()
+            if (!data.isNullOrEmpty()) {
+                networkManager.sendClipboardMessage(ClipboardInfo("text/plain", data))
+            }
+            finish()
+        }
     }
 
     companion object {
