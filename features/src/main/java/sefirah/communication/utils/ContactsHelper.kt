@@ -40,12 +40,12 @@ class ContactsHelper {
                     val lookupKey = cursor.getString(1)
                     val displayName = cursor.getString(2)
                     val photoUri = cursor.getString(3)
-                    if (id == null && lookupKey == null && displayName == null) return null
+                    if (id.isNullOrEmpty() || lookupKey.isNullOrEmpty() ||  displayName.isNullOrEmpty()) return null
                     val photoBase64 = photoId64Encoded(context, photoUri)
                     return ContactInfo(
                         id = id,
                         lookupKey = lookupKey,
-                        displayName = displayName ?: phoneNumber,
+                        displayName = displayName,
                         number = phoneNumber,
                         photoBase64 = photoBase64
                     )
@@ -95,29 +95,33 @@ class ContactsHelper {
                 .use { cursor ->
                     if (cursor != null && cursor.moveToFirst()) {
                         do {
-                            val id = cursor.getString(COLUMN_ID)           
-                            val lookupKey = cursor.getString(COLUMN_LOOKUP_KEY)    
-                            val number = cursor.getString(COLUMN_NUMBER)    
-                            val displayName = cursor.getString(COLUMN_DISPLAY_NAME)  
-                            val photoUri = cursor.getString(COLUMN_PHOTO_URI)     
+                            try {
+                                val id = cursor.getString(COLUMN_ID)
+                                val lookupKey = cursor.getString(COLUMN_LOOKUP_KEY)
+                                val number = cursor.getString(COLUMN_NUMBER)
+                                val displayName = cursor.getString(COLUMN_DISPLAY_NAME)
+                                val photoUri = cursor.getString(COLUMN_PHOTO_URI)
 
-                            if (id == null || number == null) {
-                                Log.w(TAG, "Skipping contact with missing essential information")
-                                continue
+                                if (id.isNullOrEmpty() || lookupKey.isNullOrEmpty()
+                                    || number.isNullOrEmpty() || displayName.isNullOrEmpty()) {
+                                    Log.w(TAG, "Skipping contact with missing essential information")
+                                    continue
+                                }
+
+                                val photoBase64 = photoId64Encoded(context, photoUri)
+
+                                val contactMessage = ContactInfo(
+                                    id = id,
+                                    lookupKey = lookupKey,
+                                    number = number,
+                                    displayName = displayName,
+                                    photoBase64 = photoBase64
+                                )
+
+                                toReturn.add(contactMessage)
+                            } catch (e: Exception) {
+                                Log.w(TAG, "Skipping contact, parsing failed", e)
                             }
-
-                            val photoBase64 = photoId64Encoded(context, photoUri)
-
-                            val contactMessage = ContactInfo(
-                                id = id,
-                                lookupKey = lookupKey,
-                                number = number,
-                                displayName = displayName,
-                                photoBase64 = photoBase64
-                            )
-
-                            toReturn.add(contactMessage)
-
                         } while (cursor.moveToNext())
                     }
                 }
