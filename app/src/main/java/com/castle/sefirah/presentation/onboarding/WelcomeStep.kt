@@ -1,7 +1,6 @@
 package com.castle.sefirah.presentation.onboarding
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,10 +24,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.castle.sefirah.presentation.settings.SettingsViewModel
 import sefirah.common.R
 import sefirah.presentation.components.padding
-import androidx.core.net.toUri
 
 
 internal class WelcomeStep : OnboardingStep {
@@ -80,7 +79,7 @@ internal class WelcomeStep : OnboardingStep {
                     FilledTonalButton(
                         onClick = {
                             val intent = Intent(Intent.ACTION_VIEW).apply {
-                                data = Uri.parse("https://github.com/shrimqy/Sefirah")
+                                data = "https://apps.microsoft.com/detail/9PJV6D1JPG0H?hl=en-us&gl=IN&ocid=pdpshare".toUri()
                             }
                             context.startActivity(intent)
                         },
@@ -90,32 +89,21 @@ internal class WelcomeStep : OnboardingStep {
                             text = stringResource(R.string.windows_app_button),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
                         )
-
-
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = stringResource(R.string.welcome_instructions_2),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     FilledTonalButton(
                         onClick = {
                             val intent = Intent(Intent.ACTION_VIEW).apply {
-                                data = "https://github.com/shrimqy/Sefirah-Android".toUri()
+                                data = "https://github.com/shrimqy/Sefirah/releases".toUri()
                             }
                             context.startActivity(intent)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = stringResource(R.string.android_app_button),
+                            text = stringResource(R.string.linux_app_button),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
                         )
                     }

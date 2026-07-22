@@ -94,10 +94,10 @@
 
     <!-- Onboarding & Welcome -->
     <string name="welcome">Welcome</string>
-    <string name="welcome_instructions">Let\'s get you started, firstly go through the instructions in github to download and install the Windows</string>
-    <string name="welcome_instructions_2">Once that\'s done, you can check out the Android App\'s GitHub page for more information:</string>
-    <string name="android_app_button">Android App</string>
-    <string name="windows_app_button">Windows App</string>
+    <string name="welcome_instructions">Let\'s get you started. First, install the companion app on your PC and make sure your devices are connected over the same network.</string>
+    <string name="windows_app_button">Windows</string>
+    <string name="linux_app_button">Linux</string>
+    <string name="permissions_optional">Optional</string>
 
     <!-- Preferences -->
     <string name="clipboard_sync_preference">Sync clipboard with desktop</string>
