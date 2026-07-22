@@ -241,7 +241,7 @@ fun DeviceSettingsScreen(
                     uncheckedIcon = ImageVector.vectorResource(R.drawable.ic_chat),
                     granted = permissionStates.smsPermissionGranted,
                     checked = preferences.messageSync && permissionStates.smsPermissionGranted,
-                    permission = Manifest.permission_group.SMS,
+                    permission = Manifest.permission.READ_SMS,
                     onRequest = { 
                         smsPermissionRequester.launch(
                             arrayOf(Manifest.permission.READ_SMS, Manifest.permission.SEND_SMS) 

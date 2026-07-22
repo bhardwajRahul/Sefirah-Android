@@ -140,20 +140,14 @@ fun smsPermissionGranted(
         PackageManager.PERMISSION_GRANTED
     val sendSmsPermission = context.checkSelfPermission(Manifest.permission.SEND_SMS) ==
         PackageManager.PERMISSION_GRANTED
-    val contactsPermission = context.checkSelfPermission(Manifest.permission.READ_CONTACTS) ==
-        PackageManager.PERMISSION_GRANTED
-    val telephonyPermission = context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) ==
-        PackageManager.PERMISSION_GRANTED
-    
-    val allGranted = readSmsPermission && sendSmsPermission && contactsPermission && telephonyPermission
-    
+
+    val allGranted = readSmsPermission && sendSmsPermission
+
     if (allGranted) {
         onGranted(Manifest.permission.READ_SMS)
         onGranted(Manifest.permission.SEND_SMS)
-        onGranted(Manifest.permission.READ_CONTACTS)
-        onGranted(Manifest.permission.READ_PHONE_STATE)
     }
-    
+
     return allGranted
 }
 

@@ -72,11 +72,23 @@
     <string name="background_battery_usage">Background Battery Usage</string>
     <string name="background_battery_usage_rationale">Allow the app to maintain stable connections by disabling battery optimizations</string>
     <string name="storage_access">Storage Access</string>
-    <string name="storage_access_rationale">Required for Android storage access on remote device</string>
+    <string name="storage_access_rationale">To access Android storage from remote device</string>
     <string name="accessibility_service">Accessibility Service</string>
-    <string name="accessibility_service_rationale">Required for detecting clipboard</string>
+    <string name="accessibility_service_rationale">To detect clipboard changes</string>
     <string name="notification_access">Notification Access</string>
-    <string name="notification_access_rationale">Required for notification synchronization</string>
+    <string name="notification_access_rationale">To read, dismiss, and trigger actions from notifications, and toggle DND</string>
+    <string name="messages_permission">Messages permission</string>
+    <string name="messages_permission_rationale">To send and read messages</string>
+    <string name="contacts_permission">Contacts permission</string>
+    <string name="contacts_permission_rationale">To sync and lookup contacts</string>
+    <string name="phone_permission">Phone permission</string>
+    <string name="phone_permission_rationale">To get phone number and notify about incoming calls</string>
+    <string name="call_logs_permission">Call logs permission</string>
+    <string name="call_logs_permission_rationale">To sync recent call history</string>
+    <string name="nearby_devices_permission">Nearby devices</string>
+    <string name="nearby_devices_permission_rationale">To pair Bluetooth device</string>
+    <string name="overlay_permission">Display over other apps</string>
+    <string name="overlay_permission_rationale">Used for background permission prompts</string>
     <string name="app_info">App info</string>
     <string name="restricted_settings_instruction">Due to security restrictions, you\'ll need to: \n 1. Try to enable the \'%s\' \n 2. Tap \'ok\' on the warning and come back \n 3. Go to App Info \n 4. Open the overflow menu (3 dots) \n 5. Tap \'allow restricted settings\' \n 6. Go back and try again to enable the \'%s\'</string>
 
@@ -161,16 +173,6 @@
     <string name="convert_to_mms_after" translatable="false">convert_to_mms_after</string>
     <string name="set_long_text_as_mms" translatable="false">set_long_text_as_mms</string>
     <string name="convert_to_mms_after_default" translatable="false">3</string>
-    <string name="messages_permission">Messages permission</string>
-    <string name="messages_permission_rationale">For sending and reading messages</string>
-    <string name="contacts_permission">Contacts permission</string>
-    <string name="contacts_permission_rationale">Required for contact sync and caller name lookup</string>
-    <string name="phone_permission">Phone permission</string>
-    <string name="phone_permission_rationale">Required to notify desktop of incoming calls</string>
-    <string name="nearby_devices_permission">Nearby devices</string>
-    <string name="nearby_devices_permission_rationale">For Bluetooth device pairing</string>
-    <string name="overlay_permission">Display over other apps</string>
-    <string name="overlay_permission_rationale">Used for background permission prompts</string>
     <string name="message_sync_preference">Sync messages</string>
     <string name="message_sync_subtitle">Enables reading and texting messages from desktop</string>
     <string-array name="convert_to_mms_after_entries">

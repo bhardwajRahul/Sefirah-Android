@@ -25,6 +25,7 @@ import sefirah.common.util.checkNotificationPermission
 import sefirah.common.util.checkStoragePermission
 import sefirah.common.util.contactsPermissionGranted
 import sefirah.common.util.isAccessibilityServiceEnabled
+import sefirah.common.util.isCallLogsPermissionGranted
 import sefirah.common.util.isNotificationListenerEnabled
 import sefirah.common.util.nearbyDevicesPermissionGranted
 import sefirah.common.util.phoneStatePermissionGranted
@@ -126,7 +127,8 @@ class SettingsViewModel @Inject constructor(
             val smsGranted = smsPermissionGranted(context, clearPermission)
             val contactsGranted = contactsPermissionGranted(context, clearPermission)
             val phoneStateGranted = phoneStatePermissionGranted(context, clearPermission)
-            
+            val callLogsGranted = isCallLogsPermissionGranted(context)
+
             _permissionStates.value = PermissionStates(
                 notificationGranted = notificationGranted,
                 batteryGranted = checkBatteryOptimization(context),
@@ -138,7 +140,8 @@ class SettingsViewModel @Inject constructor(
                 notificationListenerGranted = isNotificationListenerEnabled(context),
                 smsPermissionGranted = smsGranted,
                 contactsGranted = contactsGranted,
-                phoneStateGranted = phoneStateGranted
+                phoneStateGranted = phoneStateGranted,
+                callLogsGranted = callLogsGranted
             )
         }
     }
