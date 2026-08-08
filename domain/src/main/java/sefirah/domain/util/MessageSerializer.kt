@@ -18,7 +18,6 @@ import sefirah.domain.model.CallInfo
 import sefirah.domain.model.CallLogInfo
 import sefirah.domain.model.ClearNotifications
 import sefirah.domain.model.ClipboardInfo
-import sefirah.domain.model.ConnectionAck
 import sefirah.domain.model.ContactInfo
 import sefirah.domain.model.ConversationInfo
 import sefirah.domain.model.DeviceInfo
@@ -57,7 +56,6 @@ object MessageSerializer {
                 subclass(CallLogInfo::class)
                 subclass(ClearNotifications::class)
                 subclass(ClipboardInfo::class)
-                subclass(ConnectionAck::class)
                 subclass(ContactInfo::class)
                 subclass(ConversationInfo::class)
                 subclass(DeviceInfo::class)

@@ -51,7 +51,6 @@ import sefirah.domain.model.AddressEntry
 import sefirah.domain.model.Authentication
 import sefirah.domain.model.BaseRemoteDevice
 import sefirah.domain.model.ClipboardInfo
-import sefirah.domain.model.ConnectionAck
 import sefirah.domain.model.ConnectionDetails
 import sefirah.domain.model.ConnectionState
 import sefirah.domain.model.DeviceConnection
@@ -387,7 +386,6 @@ class NetworkService : Service() {
         sendAuthMessage(writeChannel)
 
         deviceManager.addOrUpdatePairedDevice(updatedDevice)
-        sendMessage(device.deviceId, ConnectionAck)
         finalizeConnection(updatedDevice, false)
     }
 
@@ -457,7 +455,6 @@ class NetworkService : Service() {
             deviceManager.addOrUpdatePairedDevice(updatedDevice)
 
             Log.d(TAG, "Device ${updatedDevice.deviceId} connected")
-            sendMessage(device.deviceId, ConnectionAck)
             finalizeConnection(updatedDevice, false)
         } catch (e: Exception) {
             Log.e(TAG, "Error during connection", e)
@@ -605,7 +602,6 @@ class NetworkService : Service() {
 
                 deviceManager.removeDiscoveredDevice(device.deviceId)
                 deviceManager.addOrUpdatePairedDevice(pairedDevice)
-                sendMessage(device.deviceId, ConnectionAck)
                 Log.d(TAG, "Created PairedDevice ${device.deviceId} after pairing approval")
 
                 finalizeConnection(pairedDevice, true)
@@ -759,7 +755,6 @@ class NetworkService : Service() {
         deviceManager.addOrUpdatePairedDevice(pairedDevice)
         Log.d(TAG, "Approved $deviceId")
 
-        sendMessage(deviceId, ConnectionAck)
         finalizeConnection(pairedDevice, true)
     }
 

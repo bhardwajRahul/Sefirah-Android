@@ -13,10 +13,6 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 sealed class SocketMessage
 
 @Serializable
-@SerialName("ConnectionAck")
-object ConnectionAck : SocketMessage()
-
-@Serializable
 @SerialName("Disconnect")
 object Disconnect : SocketMessage()
 
