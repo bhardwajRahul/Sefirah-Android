@@ -1,6 +1,6 @@
 [versions]
 # Gradle and Kotlin
-agp = "9.0.0"
+agp = "9.2.1"
 kotlin = "2.3.0"
 ksp = "2.3.4"
 jetbrainsKotlinJvm = "2.3.0"
