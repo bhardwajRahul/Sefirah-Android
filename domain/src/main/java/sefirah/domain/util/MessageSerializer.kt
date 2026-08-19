@@ -5,38 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
-import sefirah.domain.model.ActionInfo
-import sefirah.domain.model.ApplicationInfo
-import sefirah.domain.model.ApplicationList
-import sefirah.domain.model.AudioDeviceInfo
-import sefirah.domain.model.AudioStreamState
-import sefirah.domain.model.Authentication
-import sefirah.domain.model.BatteryState
-import sefirah.domain.model.BluetoothPairingRequest
-import sefirah.domain.model.BluetoothPairingResult
-import sefirah.domain.model.CallInfo
-import sefirah.domain.model.CallLogInfo
-import sefirah.domain.model.ClearNotifications
-import sefirah.domain.model.ClipboardInfo
-import sefirah.domain.model.ContactInfo
-import sefirah.domain.model.ConversationInfo
-import sefirah.domain.model.DeviceInfo
-import sefirah.domain.model.Disconnect
-import sefirah.domain.model.DndState
-import sefirah.domain.model.FileTransferInfo
-import sefirah.domain.model.MediaAction
-import sefirah.domain.model.NotificationAction
-import sefirah.domain.model.NotificationInfo
-import sefirah.domain.model.NotificationReply
-import sefirah.domain.model.PairMessage
-import sefirah.domain.model.PlaybackInfo
-import sefirah.domain.model.RequestApplicationList
-import sefirah.domain.model.RingerModeState
-import sefirah.domain.model.SftpServerInfo
-import sefirah.domain.model.SocketMessage
-import sefirah.domain.model.TextMessage
-import sefirah.domain.model.ThreadRequest
-import sefirah.domain.model.UdpBroadcast
+import sefirah.domain.model.*
 
 object MessageSerializer {
     @OptIn(ExperimentalSerializationApi::class)
