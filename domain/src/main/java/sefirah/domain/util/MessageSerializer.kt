@@ -16,6 +16,7 @@ object MessageSerializer {
                 subclass(ApplicationInfo::class)
                 subclass(ApplicationList::class)
                 subclass(Authentication::class)
+                subclass(AudioAction::class)
                 subclass(AudioDeviceInfo::class)
                 subclass(AudioStreamState::class)
                 subclass(BatteryState::class)

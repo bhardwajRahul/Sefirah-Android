@@ -26,6 +26,8 @@ import sefirah.common.notifications.AppNotifications
 import sefirah.common.notifications.NotificationCenter
 import sefirah.domain.interfaces.DeviceManager
 import sefirah.domain.interfaces.NetworkManager
+import sefirah.domain.model.AudioAction
+import sefirah.domain.model.AudioActionType
 import sefirah.domain.model.AudioDeviceInfo
 import sefirah.domain.model.AudioInfoType
 import sefirah.domain.model.DevicePreferences
@@ -300,7 +302,7 @@ class RemotePlaybackFeature @Inject constructor(
                         currentVolume = volume
                         val normalizedVolume = volume.toFloat() / maxVolume
                         if (currentAudioDevice != null) {
-                            val action = MediaAction(MediaActionType.VolumeUpdate, currentAudioDevice.deviceId, normalizedVolume.toDouble())
+                            val action = AudioAction(AudioActionType.VolumeUpdate, currentAudioDevice.deviceId, normalizedVolume.toDouble())
                             networkManager.sendMessage(deviceId, action)
                         }
                     }
@@ -314,7 +316,7 @@ class RemotePlaybackFeature @Inject constructor(
                         currentVolume = newVolume
                         val normalizedVolume = newVolume.toFloat() / maxVolume
                         if (currentAudioDevice != null) {
-                            val action = MediaAction(MediaActionType.VolumeUpdate, currentAudioDevice.deviceId, normalizedVolume.toDouble())
+                            val action = AudioAction(AudioActionType.VolumeUpdate, currentAudioDevice.deviceId, normalizedVolume.toDouble())
                             networkManager.sendMessage(deviceId, action)
                         }
                     }

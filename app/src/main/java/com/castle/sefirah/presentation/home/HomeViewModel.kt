@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import sefirah.domain.model.ActionInfo
+import sefirah.domain.model.AudioAction
+import sefirah.domain.model.AudioActionType
 import sefirah.domain.model.AudioDeviceInfo
 import sefirah.domain.model.BatteryState
 import sefirah.domain.model.MediaAction
@@ -69,15 +71,15 @@ class HomeViewModel @Inject constructor(
     )
 
     fun onVolumeChange(device: AudioDeviceInfo, volume: Float) {
-        sendMessageToSelectedDevice(MediaAction(MediaActionType.VolumeUpdate, device.deviceId, volume.toDouble()))
+        sendMessageToSelectedDevice(AudioAction(AudioActionType.VolumeUpdate, device.deviceId, volume.toDouble()))
     }
 
     fun toggleMute(device: AudioDeviceInfo) {
-        sendMessageToSelectedDevice(MediaAction(MediaActionType.ToggleMute, device.deviceId))
+        sendMessageToSelectedDevice(AudioAction(AudioActionType.ToggleMute, device.deviceId))
     }
 
     fun setDefaultDevice(device: AudioDeviceInfo) {
-        sendMessageToSelectedDevice(MediaAction(MediaActionType.DefaultDevice, device.deviceId))
+        sendMessageToSelectedDevice(AudioAction(AudioActionType.DefaultDevice, device.deviceId))
     }
 
     fun sendMessageToSelectedDevice(message: SocketMessage) {

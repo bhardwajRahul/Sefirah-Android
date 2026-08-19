@@ -30,6 +30,10 @@ enum class MediaActionType {
     Shuffle,
     Repeat,
     PlaybackRate,
+    VolumeUpdate
+}
+
+enum class AudioActionType {
     DefaultDevice,
     VolumeUpdate,
     ToggleMute

@@ -277,6 +277,14 @@ data class MediaAction(
 ) : SocketMessage()
 
 @Serializable
+@SerialName("AudioAction")
+data class AudioAction(
+    val actionType: AudioActionType,
+    val source: String,
+    val value: Double? = null
+) : SocketMessage()
+
+@Serializable
 @SerialName("ApplicationList")
 data class ApplicationList(
     val appList: List<ApplicationInfo>
