@@ -156,8 +156,6 @@
     <!-- Toast Messages -->
     <string name="toast_network">Certifique-se de estar conectado à mesma rede que seu PC</string>
     <string name="update_check_notification_update_available">Nova versão disponível!</string>
-    <string name="update_check_confirm">Download</string>
-    <string name="action_not_now">Agora não</string>
     <string name="update_check_open">Abrir no GitHub</string>
     <string name="error">Error</string>
     <string name="connection_toggle">Connection toggle</string>

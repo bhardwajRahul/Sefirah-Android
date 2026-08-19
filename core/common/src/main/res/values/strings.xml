@@ -149,6 +149,7 @@
     <!-- Hyperlinks -->
     <string name="help">Help</string>
     <string name="whats_new">What\&apos;s new</string>
+    <string name="changelog">Changelog</string>
 
     <!-- Media Playback -->
     <string name="no_media_playback">No active media playback</string>
@@ -193,9 +194,15 @@
     <!-- Toast Messages -->
     <string name="toast_network">Make sure you\'re connected to the same network as your PC</string>
     <string name="update_check_notification_update_available">New version available!</string>
-    <string name="update_check_confirm">Download</string>
-    <string name="action_not_now">Not now</string>
     <string name="update_check_open">Open on Github</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="update_check_no_updates">No new updates available</string>
+    <string name="android">Android</string>
+    <string name="desktop">Desktop</string>
+    <string name="update_check_play_store">Open on Play Store</string>
+    <string name="update_from_to_version">%1$s → %2$s</string>
+    <string name="update_notes_unavailable">Release notes unavailable.</string>
+    <string name="update_check_failed">Couldn\'t check for updates</string>
     <string name="error">Error</string>
     <string name="connection_toggle">Connection toggle</string>
     <string name="trust_all_networks">Trust all networks</string>

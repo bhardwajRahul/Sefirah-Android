@@ -18,9 +18,11 @@ import kotlinx.coroutines.launch
 import sefirah.data.repository.AppUpdateChecker
 import sefirah.data.repository.ReleaseRepository
 import sefirah.domain.model.PairedDevice
+import sefirah.domain.model.UpdateInfo
 import sefirah.domain.interfaces.DeviceManager
 import sefirah.domain.interfaces.NetworkManager
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class ConnectionViewModel @Inject constructor(
@@ -35,7 +37,11 @@ class ConnectionViewModel @Inject constructor(
 
     val pairedDevices: StateFlow<List<PairedDevice>> = deviceManager.pairedDevices
 
-    val newUpdate = MutableStateFlow<ReleaseRepository.Result.NewUpdate?>(null)
+    private val _updateInfo = MutableStateFlow<UpdateInfo?>(null)
+    val updateInfo: StateFlow<UpdateInfo?> = _updateInfo.asStateFlow()
+
+    private val _isCheckingForUpdate = MutableStateFlow(false)
+    val isCheckingForUpdate: StateFlow<Boolean> = _isCheckingForUpdate.asStateFlow()
 
     val hasCheckedForUpdate = mutableStateOf(false)
 
@@ -72,7 +78,7 @@ class ConnectionViewModel @Inject constructor(
                 connectionJobs.remove(device.deviceId)?.cancel()
                 connectionJobs[device.deviceId] = appScope.launch(Dispatchers.IO) {
                     networkManager.disconnect(device.deviceId)
-                    delay(200)
+                    delay(200.milliseconds)
                     networkManager.connectPaired(device)
                 }
             }
@@ -98,11 +104,22 @@ class ConnectionViewModel @Inject constructor(
         deviceManager.selectDevice(device.deviceId)
     }
 
-    suspend fun checkForUpdate(): ReleaseRepository.Result {
-        val result = appUpdateChecker.checkForUpdate()
-        if (result is ReleaseRepository.Result.NewUpdate) {
-            newUpdate.value = result
+    suspend fun checkForUpdate(force: Boolean = false): ReleaseRepository.Result {
+        _isCheckingForUpdate.value = true
+        return try {
+            val result = appUpdateChecker.checkForUpdate(force)
+            when (result) {
+                is ReleaseRepository.Result.NewUpdate -> {
+                    _updateInfo.value = result.updateInfo
+                }
+                is ReleaseRepository.Result.NoNewUpdate -> {
+                    result.updateInfo?.let { _updateInfo.value = it }
+                }
+                ReleaseRepository.Result.Error -> Unit
+            }
+            result
+        } finally {
+            _isCheckingForUpdate.value = false
         }
-        return result
     }
 }

@@ -12,12 +12,12 @@ class AppUpdateChecker @Inject constructor(
     private val context: Context,
     private val releaseRepository: ReleaseRepository,
 ) {
-    suspend fun checkForUpdate() : ReleaseRepository.Result {
+    suspend fun checkForUpdate(force: Boolean = false): ReleaseRepository.Result {
         val packageInfo: PackageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         val version = packageInfo.versionName
 
         return withContext(Dispatchers.IO) {
-            releaseRepository.getRelease(version!!)
+            releaseRepository.getRelease(version!!, force)
         }
     }
 }

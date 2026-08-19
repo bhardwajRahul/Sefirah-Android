@@ -127,8 +127,6 @@
     <!-- Toast Messages -->
     <string name="toast_network">请确保与要连接的PC处于同一网络</string>
     <string name="update_check_notification_update_available">New version available!</string>
-    <string name="update_check_confirm">Download</string>
-    <string name="action_not_now">Not now</string>
     <string name="update_check_open">Open on Github</string>
     <string name="error">Error</string>
     <string name="connection_toggle">Connection toggle</string>
