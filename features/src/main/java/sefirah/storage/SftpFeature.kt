@@ -239,8 +239,6 @@ class SftpFeature @Inject constructor(
         val server = sshd ?: return null
 
         val pwd = generateRandomPassword()
-        val localDevice = deviceManager.localDevice
-        val username = localDevice.deviceName
 
         val paths = mutableListOf<String>()
         val pathNames = mutableListOf<String>()
@@ -254,7 +252,7 @@ class SftpFeature @Inject constructor(
         server.keyPairProvider = PfxKeyPairProvider()
         server.publickeyAuthenticator = PublickeyAuthenticator { _, _, _ -> true }
         server.passwordAuthenticator = PasswordAuthenticator { user, password, _ ->
-            user == username && password == pwd
+            user == USER && password == pwd
         }
 
         PORT_RANGE.forEach { port ->
@@ -265,7 +263,7 @@ class SftpFeature @Inject constructor(
                 isRunning = true
 
                 serverInfo = SftpServerInfo(
-                    username = username,
+                    username = USER,
                     password = pwd,
                     port = port,
                     paths = paths,
@@ -301,6 +299,7 @@ class SftpFeature @Inject constructor(
     companion object {
         private const val TAG = "SftpFeature"
         private const val TRASH_RETENTION_MS = 30L * 24 * 60 * 60 * 1000
+        private const val USER = "sefirah"
         val SUPPORTS_NATIVEFS = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
         private val PORT_RANGE = 5151..5169
