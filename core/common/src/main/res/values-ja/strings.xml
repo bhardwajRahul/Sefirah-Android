@@ -2,7 +2,6 @@
 <resources>
   <!-- App -->
   <string name="version">バージョン</string>
-  <string name="windows_app">Windows アプリ</string>
   <string name="share_deep_link">デスクトップに共有</string>
   <!-- Notifications Groups-->
   <string name="group_file_transfer">ファイル転送</string>
@@ -81,8 +80,6 @@
   <!-- Onboarding & Welcome -->
   <string name="welcome">ようこそ</string>
   <string name="welcome_instructions">それでは始めましょう。まずは GitHub での指示に従って Windows のアプリをダウンロードしてインストールしてください。</string>
-  <string name="welcome_instructions_2">完了後に Android アプリの GitHub ページで詳細を確認してください。</string>
-  <string name="android_app_button">Android アプリ</string>
   <string name="windows_app_button">Windows アプリ</string>
   <!-- Preferences -->
   <string name="clipboard_sync_preference">クリップボードをデスクトップと同期</string>

@@ -2,7 +2,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- App -->
     <string name="version">Versão</string>
-    <string name="windows_app">App para Windows</string>
     <string name="share_deep_link">Enviar ao PC</string>
 
     <!-- Notifications Groups-->
@@ -89,8 +88,6 @@
     <!-- Onboarding & Welcome -->
     <string name="welcome">Bem-vindo</string>
     <string name="welcome_instructions">Vamos começar, primeiro siga as instruções no GitHub para baixar e instalar o app para Windows</string>
-    <string name="welcome_instructions_2">Após isso, você pode conferir esta página no GitHub para obter mais informações sobre o app para Android:</string>
-    <string name="android_app_button">Android</string>
     <string name="windows_app_button">Windows</string>
 
     <!-- Preferences -->

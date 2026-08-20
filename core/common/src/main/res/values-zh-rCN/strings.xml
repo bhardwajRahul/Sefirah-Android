@@ -2,7 +2,6 @@
 <resources>
     <!-- App -->
     <string name="version">版本</string>
-    <string name="windows_app">Windows端</string>
     <string name="share_deep_link">分享至桌面端</string>
     <string name="group_file_transfer">文件传输</string>
     <string name="group_media">媒体</string>
@@ -73,8 +72,6 @@
     <string name="add_address">Add Address</string>
     <string name="welcome">欢迎</string>
     <string name="welcome_instructions">请先按照Github上的指南在Windows上安装配套软件</string>
-    <string name="welcome_instructions_2">完成后，请前往安卓APP的Github仓库了解更多：</string>
-    <string name="android_app_button">安卓APP</string>
     <string name="windows_app_button">Windows APP</string>
     <string name="clipboard_sync_preference">与PC同步剪贴板</string>
     <string name="clipboard_sync_subtitle">[需要无障碍权限] 检测并将剪贴板内容同步至桌面端</string>

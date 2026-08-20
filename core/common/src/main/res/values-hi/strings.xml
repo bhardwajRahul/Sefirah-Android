@@ -2,7 +2,6 @@
 <resources>
     <!-- App -->
     <string name="version">Version</string>
-    <string name="windows_app">Windows app</string>
     <string name="share_deep_link">Share to Desktop</string>
 
     <!-- Notifications -->
@@ -90,8 +89,6 @@
     <!-- Onboarding & Welcome -->
     <string name="welcome">Welcome</string>
     <string name="welcome_instructions">Let\'s get you started, firstly go through the instructions in github to download and install the Windows</string>
-    <string name="welcome_instructions_2">Once that\'s done, you can check out the Android App\'s GitHub page for more information:</string>
-    <string name="android_app_button">Android App</string>
     <string name="windows_app_button">Windows App</string>
 
     <!-- Preferences -->

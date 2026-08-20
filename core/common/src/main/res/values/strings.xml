@@ -3,7 +3,6 @@
     <!-- App -->
     <string name="app_name" translatable="false">Sefirah</string>
     <string name="version">Version</string>
-    <string name="windows_app">Windows app</string>
     <string name="share_deep_link">Share to Desktop</string>
     <string name="battery_level">%1$d%%</string>
     <string name="battery_status">Battery status</string>
