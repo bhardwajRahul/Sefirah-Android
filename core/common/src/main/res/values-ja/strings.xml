@@ -6,7 +6,6 @@
   <string name="share_deep_link">デスクトップに共有</string>
   <!-- Notifications Groups-->
   <string name="group_file_transfer">ファイル転送</string>
-  <string name="group_network">ネットワーク</string>
   <string name="group_media">メディア</string>
   <!-- Channels -->
   <string name="channel_transfer_progress">転送の進捗</string>

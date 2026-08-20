@@ -7,7 +7,6 @@
 
     <!-- Notifications Groups-->
     <string name="group_file_transfer">Envio de arquivos</string>
-    <string name="group_network">Rede</string>
     <string name="group_media">Mídia</string>
 
     <!-- Channels -->

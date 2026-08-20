@@ -5,7 +5,6 @@
     <string name="windows_app">Windows端</string>
     <string name="share_deep_link">分享至桌面端</string>
     <string name="group_file_transfer">文件传输</string>
-    <string name="group_network">网络</string>
     <string name="group_media">媒体</string>
     <string name="channel_transfer_progress">传输进度</string>
     <string name="channel_transfer_complete">传输完成</string>

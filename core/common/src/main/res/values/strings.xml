@@ -10,7 +10,7 @@
 
     <!-- Notifications Groups-->
     <string name="group_file_transfer">File Transfer</string>
-    <string name="group_network">Network</string>
+    <string name="group_device">Device</string>
     <string name="group_media">Media</string>
 
     <!-- Channels -->
