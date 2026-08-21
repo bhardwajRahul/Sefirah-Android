@@ -19,6 +19,10 @@
     <string name="channel_pairing_request">Pairing Request</string>
     <string name="channel_media_playback">Desktop Media Playback</string>
 
+    <!-- Play Sound -->
+    <string name="play_sound_notification_title">Playing sound from %1$s</string>
+    <string name="play_sound_stop_action">Stop</string>
+
     <!-- Notification Content -->
     <string name="notification_status_connecting">Connecting to %s</string>
     <string name="notification_status_disconnected">Not connected</string>
@@ -121,6 +125,8 @@
     <string name="call_notifier_preference_subtitle">Notifies desktop of incoming calls</string>
     <string name="call_log_sync_preference">Sync call logs</string>
     <string name="call_log_sync_preference_subtitle">Shares recent call history with desktop</string>
+    <string name="play_sound">Play sound</string>
+    <string name="play_sound_preference_subtitle">Allow this device to ring from desktop</string>
     <string name="media_session_subtitle">Control remote media playback from the app</string>
     <string name="media_session_notification_preference">Show media playback notification</string>
     <string name="media_session_notification_subtitle">Show now playing controls in the notification bar</string>

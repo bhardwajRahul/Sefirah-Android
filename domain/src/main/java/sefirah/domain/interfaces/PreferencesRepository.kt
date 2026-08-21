@@ -64,5 +64,8 @@ interface PreferencesRepository {
 
     suspend fun saveRemoteStorageSettingsForDevice(deviceId: String, enabled: Boolean)
     fun readRemoteStorageSettingsForDevice(deviceId: String): Flow<Boolean>
+
+    suspend fun savePlaySoundSettingsForDevice(deviceId: String, enabled: Boolean)
+    fun readPlaySoundSettingsForDevice(deviceId: String): Flow<Boolean>
 }
 

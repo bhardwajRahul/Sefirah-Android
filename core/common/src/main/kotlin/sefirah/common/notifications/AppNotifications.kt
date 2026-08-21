@@ -29,7 +29,9 @@ object AppNotifications {
     const val DEVICE_CONNECTION_ID = 2001
     const val PAIRING_REQUEST_ID = 2003
     const val BLUETOOTH_DISCOVERABLE_REQUEST_ID = 2005
-    
+    const val PLAY_SOUND_CHANNEL = "play_sound_channel"
+    const val PLAY_SOUND_ID = 3002
+
     // Media related constants
     private const val MEDIA_GROUP = "group_media"
     const val MEDIA_PLAYBACK_CHANNEL = "media_playback_channel"
@@ -82,13 +84,18 @@ object AppNotifications {
                     setName("Bluetooth pairing")
                     setGroup(DEVICE_GROUP)
                 },
-                
+                buildNotificationChannel(PLAY_SOUND_CHANNEL, IMPORTANCE_HIGH) {
+                    setName(context.getString(R.string.play_sound))
+                    setGroup(DEVICE_GROUP)
+                    setSound(null, null)
+                },
+
                 // Media Channels
                 buildNotificationChannel(MEDIA_PLAYBACK_CHANNEL, IMPORTANCE_LOW) {
                     setName(context.getString(R.string.channel_media_playback))
                     setGroup(MEDIA_GROUP)
                     setShowBadge(false)
-                }
+                },
             )
         )
         notificationManager.deleteNotificationChannelGroup("group_network")

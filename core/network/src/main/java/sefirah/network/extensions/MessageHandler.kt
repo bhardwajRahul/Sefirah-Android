@@ -22,6 +22,7 @@ import sefirah.domain.model.NotificationReply
 import sefirah.domain.model.PairMessage
 import sefirah.domain.model.PairedDevice
 import sefirah.domain.model.PlaybackInfo
+import sefirah.domain.model.PlaySound
 import sefirah.domain.model.RequestApplicationList
 import sefirah.domain.model.RingerModeState
 import sefirah.domain.model.SocketMessage
@@ -66,6 +67,7 @@ suspend fun NetworkService.handleMessage(device: BaseRemoteDevice, message: Sock
                 is ActionInfo -> actionFeature.addAction(device.deviceId, message)
                 is BatteryState -> remoteDeviceStatusFeature.updateBattery(device.deviceId, message)
                 is BluetoothPairingRequest -> bluetoothPairingHandler.handleBluetoothRequest(device.deviceId)
+                is PlaySound -> playSoundFeature.handle(device.deviceId, message)
                 else -> {}
             }
         }

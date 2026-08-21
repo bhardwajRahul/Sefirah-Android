@@ -1,9 +1,14 @@
 plugins {
     alias(libs.plugins.sefirah.android.library)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "sefirah.features"
+
+    buildFeatures {
+        compose = true
+    }
 
     packaging {
         resources {
@@ -24,7 +29,12 @@ dependencies {
     implementation(projects.core.database)
 
     implementation(libs.core.ktx)
+    implementation(platform(libs.compose.bom))
     implementation(libs.activity.compose)
+    implementation(libs.compose.ui)
+    implementation(libs.foundation)
+    implementation(libs.animation)
+    implementation(libs.material3.core)
     implementation(libs.android.smsmms)
     implementation(libs.commons.io)
     implementation(libs.commons.lang3)

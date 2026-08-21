@@ -62,14 +62,15 @@ import sefirah.domain.model.PairedDevice
 import sefirah.domain.model.PendingDeviceApproval
 import sefirah.domain.model.SocketMessage
 import sefirah.domain.util.MessageSerializer
+import sefirah.media.PlaybackFeature
+import sefirah.media.RemotePlaybackFeature
 import sefirah.network.extensions.cancelPairingVerificationNotification
 import sefirah.network.extensions.handleMessage
 import sefirah.network.extensions.setNotification
 import sefirah.network.extensions.showPairingVerificationNotification
 import sefirah.network.util.SslHelper
 import sefirah.notification.NotificationFeature
-import sefirah.media.PlaybackFeature
-import sefirah.media.RemotePlaybackFeature
+import sefirah.playsound.PlaySoundFeature
 import sefirah.status.DeviceControlHandler
 import sefirah.status.RemoteDeviceStatusFeature
 import sefirah.transfer.FileTransferService
@@ -116,6 +117,8 @@ class NetworkService : Service() {
     @Inject lateinit var appListHandler: AppListHandler
 
     @Inject lateinit var bluetoothPairingHandler: BluetoothPairingHandler
+
+    @Inject lateinit var playSoundFeature: PlaySoundFeature
 
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val binder = LocalBinder()
@@ -813,6 +816,7 @@ class NetworkService : Service() {
         unregisterReceiver(screenOnReceiver)
         unregisterReceiver(wifiStateReceiver)
         deviceControlHandler.stop()
+        playSoundFeature.stop()
         networkDiscovery.unregister()
 
         remotePlaybackFeature.release()

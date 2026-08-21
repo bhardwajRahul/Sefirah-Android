@@ -38,6 +38,7 @@ object MessageSerializer {
                 subclass(NotificationReply::class)
                 subclass(PairMessage::class)
                 subclass(PlaybackInfo::class)
+                subclass(PlaySound::class)
                 subclass(RequestApplicationList::class)
                 subclass(RingerModeState::class)
                 subclass(SftpServerInfo::class)

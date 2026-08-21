@@ -31,6 +31,7 @@ import sefirah.media.RemotePlaybackFeature
 import sefirah.network.NetworkManagerImpl
 import sefirah.network.SocketFactoryImpl
 import sefirah.notification.NotificationFeature
+import sefirah.playsound.PlaySoundFeature
 import sefirah.status.RemoteDeviceStatusFeature
 import sefirah.storage.SftpFeature
 import javax.inject.Singleton
@@ -86,6 +87,10 @@ internal abstract class AppModule {
     @Binds
     @IntoSet
     abstract fun bindRemoteStatusFeature(feature: RemoteDeviceStatusFeature): Feature
+
+    @Binds
+    @IntoSet
+    abstract fun bindPlaySoundFeature(feature: PlaySoundFeature): Feature
 
     companion object {
         @Provides

@@ -106,6 +106,12 @@ data class DndState(
 ) : SocketMessage()
 
 @Serializable
+@SerialName("PlaySound")
+data class PlaySound(
+    val isPlaying: Boolean
+) : SocketMessage()
+
+@Serializable
 @SerialName("AudioStreamState")
 data class AudioStreamState(
     val streamType: Int,

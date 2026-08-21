@@ -226,6 +226,13 @@ class DeviceSettingsViewModel @Inject constructor(
         }
     }
 
+    fun savePlaySoundSettings(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.savePlaySoundSettingsForDevice(deviceId, enabled)
+            featureManager.onPreferencesChanged(deviceId)
+        }
+    }
+
     fun hasRequestedPermission(permission: String): Flow<Boolean> {
         return preferencesRepository.hasRequestedPermission(permission)
     }

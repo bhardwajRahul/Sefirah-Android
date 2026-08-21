@@ -12,4 +12,5 @@ data class DevicePreferences(
     val remoteVolumeControl: Boolean = false,
     val mediaPlayerControl: Boolean = false,
     val remoteStorage: Boolean = false,
+    val playSound: Boolean = false,
 )

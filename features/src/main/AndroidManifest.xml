@@ -7,5 +7,16 @@
             android:exported="false"
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name="sefirah.playsound.PlaySoundActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+
+        <receiver
+            android:name="sefirah.playsound.PlaySoundReceiver"
+            android:exported="false" />
     </application>
 </manifest>

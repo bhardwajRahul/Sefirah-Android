@@ -221,6 +221,16 @@ class PreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun savePlaySoundSettingsForDevice(deviceId: String, enabled: Boolean) {
+        devicePlaySoundKey(deviceId).update(enabled)
+    }
+
+    override fun readPlaySoundSettingsForDevice(deviceId: String): Flow<Boolean> {
+        return datastore.data.map { preferences ->
+            preferences[devicePlaySoundKey(deviceId)] != false
+        }
+    }
+
     private suspend inline fun <T> Preferences.Key<T>.update(newValue: T) {
         datastore.edit { preferences ->
             preferences[this] = newValue
@@ -242,7 +252,8 @@ class PreferencesRepositoryImpl @Inject constructor(
                 mediaSessionNotification = preferences[deviceMediaSessionNotificationKey(deviceId)] != false,
                 remoteVolumeControl = preferences[deviceRemoteVolumeControlKey(deviceId)] == true,
                 mediaPlayerControl = preferences[deviceMediaPlayerControlKey(deviceId)] != false,
-                remoteStorage = preferences[deviceRemoteStorageKey(deviceId)] == true
+                remoteStorage = preferences[deviceRemoteStorageKey(deviceId)] == true,
+                playSound = preferences[devicePlaySoundKey(deviceId)] != false,
             )
         }
     }
@@ -271,5 +282,6 @@ class PreferencesRepositoryImpl @Inject constructor(
         fun deviceRemoteVolumeControlKey(deviceId: String) = booleanPreferencesKey("remoteVolumeControl_$deviceId")
         fun deviceMediaPlayerControlKey(deviceId: String) = booleanPreferencesKey("mediaPlayerControl_$deviceId")
         fun deviceRemoteStorageKey(deviceId: String) = booleanPreferencesKey("remoteStorage_$deviceId")
+        fun devicePlaySoundKey(deviceId: String) = booleanPreferencesKey("playSound_$deviceId")
     }
 }
