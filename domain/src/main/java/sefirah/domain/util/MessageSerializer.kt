@@ -13,6 +13,7 @@ object MessageSerializer {
         serializersModule = SerializersModule {
             polymorphic(SocketMessage::class) {
                 subclass(ActionInfo::class)
+                subclass(ActionList::class)
                 subclass(ApplicationInfo::class)
                 subclass(ApplicationList::class)
                 subclass(Authentication::class)

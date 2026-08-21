@@ -45,6 +45,16 @@ class PreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun saveShowActionLabels(enabled: Boolean) {
+        SHOW_ACTION_LABELS.update(enabled)
+    }
+
+    override fun readShowActionLabels(): Flow<Boolean> {
+        return datastore.data.map { preferences ->
+            preferences[SHOW_ACTION_LABELS] != false
+        }
+    }
+
     override suspend fun updateStorageLocation(uri: String) {
         STORAGE_LOCATION.update(uri)
     }
@@ -269,6 +279,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         val PASSIVE_DISCOVERY = booleanPreferencesKey("passiveDiscovery")
         val LAST_CHECKED_FOR_UPDATE = longPreferencesKey("lastCheckedForUpdate")
         val TRUST_ALL_NETWORKS = booleanPreferencesKey("trustAllNetworks")
+        val SHOW_ACTION_LABELS = booleanPreferencesKey("showActionLabels")
 
         fun permissionRequestedKey(permission: String) = booleanPreferencesKey("permission_requested_$permission")
         fun deviceClipboardSyncKey(deviceId: String) = booleanPreferencesKey("clipboardSync_$deviceId")

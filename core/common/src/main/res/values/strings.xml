@@ -137,6 +137,8 @@
     <string name="storage_access_subtitle">Allows Windows to access your Android storage</string>
     <string name="network_preference">Network settings</string>
     <string name="network_subtitle">Configure connection preferences</string>
+    <string name="show_action_labels_preference">Show action labels</string>
+    <string name="show_action_labels_subtitle">Show names under desktop actions on the home screen</string>
     <string name="storage_location_preference">Storage location</string>
 
     <!-- Dialogs -->

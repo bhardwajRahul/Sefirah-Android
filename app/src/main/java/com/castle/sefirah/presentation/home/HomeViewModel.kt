@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import sefirah.domain.interfaces.PreferencesRepository
 import sefirah.domain.model.ActionInfo
 import sefirah.domain.model.AudioAction
 import sefirah.domain.model.AudioActionType
@@ -30,7 +31,8 @@ class HomeViewModel @Inject constructor(
     private val deviceManager: DeviceManager,
     private val networkManager: NetworkManager,
     actionFeature: ActionFeature,
-    remoteDeviceStatusFeature: RemoteDeviceStatusFeature
+    remoteDeviceStatusFeature: RemoteDeviceStatusFeature,
+    preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
     val batteryByDevice: StateFlow<Map<String, BatteryState>> =
@@ -53,6 +55,10 @@ class HomeViewModel @Inject constructor(
             actionFeature.actionsByDevice.map { it[deviceId] ?: emptyList() }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val showActionLabels: StateFlow<Boolean> = preferencesRepository
+        .readShowActionLabels()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     fun onPlayPause(session: PlaybackInfo) = sendMessageToSelectedDevice(
         MediaAction(if (session.isPlaying) MediaActionType.Pause else MediaActionType.Play, session.source)

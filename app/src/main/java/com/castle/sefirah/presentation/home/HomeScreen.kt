@@ -39,6 +39,7 @@ fun HomeScreen(
     val activeSessions by viewModel.activeSessions.collectAsState()
     val audioDevices by viewModel.audioDevices.collectAsState()
     val actions by viewModel.actions.collectAsState()
+    val showActionLabels by viewModel.showActionLabels.collectAsState()
     val batteryByDevice by viewModel.batteryByDevice.collectAsState()
 
     // Bottom sheet state
@@ -91,6 +92,7 @@ fun HomeScreen(
                     item(key = "device_control") {
                         DeviceControlCard(
                             actions = actions,
+                            showLabels = showActionLabels,
                             onActionClick = { action ->
                                 viewModel.sendMessageToSelectedDevice(action)
                             }

@@ -67,6 +67,7 @@ fun SettingsScreen(
     val storageLocation by viewModel.storageLocation.collectAsState()
     val recycleBinLocation by viewModel.recycleBinLocation.collectAsState()
     val localDevice by viewModel.localDevice.collectAsState()
+    val showActionLabels by viewModel.showActionLabels.collectAsState()
 
     // State for device name dialog
     var showDeviceNameDialog by remember { mutableStateOf(false) }
@@ -186,6 +187,16 @@ fun SettingsScreen(
                         showDeviceNameDialog = true
                     }
                 )
+        }
+
+        item {
+            SwitchPreferenceWidget(
+                title = stringResource(R.string.show_action_labels_preference),
+                subtitle = stringResource(R.string.show_action_labels_subtitle),
+                icon = ImageVector.vectorResource(R.drawable.ic_apps),
+                checked = showActionLabels,
+                onCheckedChanged = viewModel::saveShowActionLabels,
+            )
         }
 
         item {

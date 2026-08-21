@@ -309,6 +309,14 @@ data class ApplicationInfo(
 data class ActionInfo(
     val actionId: String,
     val actionName: String,
+    val icon: String? = null,
+    val askForConfirmation: Boolean = false,
+) : SocketMessage()
+
+@Serializable
+@SerialName("ActionList")
+data class ActionList(
+    val actions: List<ActionInfo> = emptyList(),
 ) : SocketMessage()
 
 @Parcelize

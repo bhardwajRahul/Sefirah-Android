@@ -2,6 +2,7 @@ package sefirah.network.extensions
 
 import android.util.Log
 import sefirah.domain.model.ActionInfo
+import sefirah.domain.model.ActionList
 import sefirah.domain.model.AudioDeviceInfo
 import sefirah.domain.model.AudioStreamState
 import sefirah.domain.model.BaseRemoteDevice
@@ -65,6 +66,7 @@ suspend fun NetworkService.handleMessage(device: BaseRemoteDevice, message: Sock
                 is AudioDeviceInfo -> remotePlaybackFeature.handleAudioDevice(device.deviceId, message)
                 is AudioStreamState -> deviceControlHandler.setStreamVolume(device.deviceId, message)
                 is ActionInfo -> actionFeature.addAction(device.deviceId, message)
+                is ActionList -> actionFeature.setActions(device.deviceId, message.actions)
                 is BatteryState -> remoteDeviceStatusFeature.updateBattery(device.deviceId, message)
                 is BluetoothPairingRequest -> bluetoothPairingHandler.handleBluetoothRequest(device.deviceId)
                 is PlaySound -> playSoundFeature.handle(device.deviceId, message)

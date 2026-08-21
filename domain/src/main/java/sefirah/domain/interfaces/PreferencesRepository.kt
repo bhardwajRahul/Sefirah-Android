@@ -15,6 +15,9 @@ interface PreferencesRepository {
     suspend fun saveTrustAllNetworks(enabled: Boolean)
     fun readTrustAllNetworks(): Flow<Boolean>
 
+    suspend fun saveShowActionLabels(enabled: Boolean)
+    fun readShowActionLabels(): Flow<Boolean>
+
     suspend fun updateStorageLocation(uri: String)
     suspend fun getStorageLocation(): Flow<String>
 

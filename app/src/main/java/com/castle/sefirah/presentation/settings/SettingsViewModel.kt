@@ -60,6 +60,10 @@ class SettingsViewModel @Inject constructor(
         .readTrustAllNetworks()
         .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
+    val showActionLabels: StateFlow<Boolean> = preferencesRepository
+        .readShowActionLabels()
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
+
     private val _storageLocation = MutableStateFlow("")
     val storageLocation: StateFlow<String> = _storageLocation
 
@@ -193,7 +197,12 @@ class SettingsViewModel @Inject constructor(
     fun saveTrustAllNetworks(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveTrustAllNetworks(enabled)
-            // StateFlow will automatically update from the repository flow
+        }
+    }
+
+    fun saveShowActionLabels(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.saveShowActionLabels(enabled)
         }
     }
 
