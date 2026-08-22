@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.DesktopWindows
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +23,7 @@ import com.castle.sefirah.presentation.settings.components.PrefsHorizontalPaddin
 import com.castle.sefirah.presentation.settings.components.PrefsVerticalPadding
 import com.castle.sefirah.presentation.settings.components.highlightBackground
 import sefirah.common.R
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import sefirah.domain.model.DiscoveredDevice
 
@@ -50,7 +49,7 @@ fun DeviceItem(
             modifier = Modifier
                 .padding(start = PrefsHorizontalPadding, end = 16.dp)
                 .size(38.dp),
-            imageVector = Icons.Rounded.DesktopWindows,
+            painter = painterResource(R.drawable.ic_desktop_windows),
             contentDescription = "Device Icon",
             tint = MaterialTheme.colorScheme.surfaceTint,
         )

@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,10 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import sefirah.common.R
 import sefirah.presentation.components.padding
 import sefirah.presentation.util.secondaryItemAlpha
 
@@ -130,7 +130,7 @@ fun InfoScreen(
 @Composable
 private fun InfoScaffoldPreview() {
     InfoScreen(
-        icon = Icons.Outlined.Newspaper,
+        icon = ImageVector.vectorResource(R.drawable.ic_info_fill),
         headingText = "Heading",
         subtitleText = "Subtitle",
         acceptText = "Accept",

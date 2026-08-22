@@ -417,7 +417,7 @@ private fun DeviceHeader(device: PairedDevice) {
             } else {
                 device.lastConnected?.let {
                     DeviceStatusInfo(
-                        icon = Icons.Default.AccessTime,
+                        icon = painterResource(R.drawable.ic_access_time),
                         text = convertTimestampToDate(it),
                         color = MaterialTheme.colorScheme.outline
                     )

@@ -1,9 +1,5 @@
 package sefirah.presentation.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +12,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.painterResource
+import sefirah.common.R
 
 @Composable
 fun AppTopBar(
@@ -54,7 +52,7 @@ fun AppTopBar(
                     leadingIcon = {
                         if (!active) {
                             Icon(
-                                imageVector = Icons.Default.Search,
+                                painter = painterResource(R.drawable.ic_search),
                                 contentDescription = "Search Icon"
                             )
                         } else {
@@ -63,7 +61,7 @@ fun AppTopBar(
                                 active = false
                             }) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                    painter = painterResource(R.drawable.ic_keyboard_arrow_left),
                                     contentDescription = "Back icon"
                                 )
                             }
@@ -73,7 +71,7 @@ fun AppTopBar(
                         if (active && text.isNotEmpty()) {
                             IconButton(onClick = { text = "" }) {
                                 Icon(
-                                    imageVector = Icons.Default.Clear,
+                                    painter = painterResource(R.drawable.ic_clear),
                                     contentDescription = "Clear Icon"
                                 )
                             }
@@ -86,7 +84,7 @@ fun AppTopBar(
             if (!active && selectedItem == 1) {
                 IconButton(onClick = { active = true }) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        painter = painterResource(R.drawable.ic_search),
                         contentDescription = "Search Icon"
                     )
                 }

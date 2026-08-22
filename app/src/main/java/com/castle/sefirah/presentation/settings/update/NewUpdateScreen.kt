@@ -14,9 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -123,7 +121,7 @@ fun NewUpdateScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.NewReleases,
+                    painter = painterResource(R.drawable.ic_new_releases),
                     contentDescription = null,
                     modifier = Modifier.size(40.dp),
                     tint = MaterialTheme.colorScheme.primary,
@@ -334,7 +332,7 @@ private fun UpdateBottomBar(
         ) {
             Text(text = stringResource(R.string.update_check_open))
             Icon(
-                imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                painter = painterResource(R.drawable.ic_open_in_new),
                 contentDescription = null,
                 modifier = Modifier.padding(start = MaterialTheme.padding.extraSmall),
             )

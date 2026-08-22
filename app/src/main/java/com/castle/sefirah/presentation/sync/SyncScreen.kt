@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -50,7 +48,7 @@ fun SyncScreen(
                     title = { Text(text = stringResource(R.string.available_devices)) },
                     navigationIcon = {
                         IconButton(onClick = { rootNavController.navigateUp() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                            Icon(painterResource(R.drawable.ic_arrow_back), "Back")
                         }
                     },
                     actions = {
@@ -60,7 +58,7 @@ fun SyncScreen(
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.QrCodeScanner,
+                                painter = painterResource(R.drawable.ic_qr_code_scanner),
                                 contentDescription = "Scan QR Code"
                             )
                         }
