@@ -67,6 +67,7 @@ dependencies {
     api(projects.domain)
 
     implementation(libs.androidx.appcompat)
+    implementation(libs.material)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.core.ktx)
     implementation(libs.androidx.work)
