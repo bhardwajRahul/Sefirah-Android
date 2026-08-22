@@ -168,7 +168,6 @@ camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "ca
 camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraX" }
 camerax-view = { module = "androidx.camera:camera-view", version.ref = "cameraX" }
 
-
 richtext-commonmark = { module = "com.halilibo.compose-richtext:richtext-commonmark", version.ref = "richtext" }
 richtext-m3 = { module = "com.halilibo.compose-richtext:richtext-ui-material3", version.ref = "richtext" }
 
@@ -202,7 +201,7 @@ sefirah-jvm-library = { id = "sefirah.jvm.library", version = "unspecified" }
 [bundles]
 compose-android = [
     "activity-compose", "foundation", "animation", "animation-graphics",
-    "compose-ui", "material3-core", "material-icons", "ui-tooling-preview"
+    "compose-ui", "material3-core", "ui-tooling-preview"
 ]
 
 ktor = [
