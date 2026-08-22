@@ -2,7 +2,7 @@
 # Gradle and Kotlin
 agp = "9.2.1"
 kotlin = "2.3.0"
-ksp = "2.3.4"
+ksp = "2.3.6"
 jetbrainsKotlinJvm = "2.3.0"
 androidDesugarJdkLibs = "2.1.5"
 smsmms = "kdeconnect-1-21-0"
