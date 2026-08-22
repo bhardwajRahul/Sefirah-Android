@@ -294,6 +294,19 @@ fun DeviceSettingsScreen(
 
             item {
                 SwitchPreferenceWidget(
+                    title = stringResource(R.string.play_sound),
+                    subtitle = stringResource(R.string.play_sound_preference_subtitle),
+                    checkedIcon = ImageVector.vectorResource(R.drawable.ic_volume_up_fill),
+                    uncheckedIcon = ImageVector.vectorResource(R.drawable.ic_volume_off_fill),
+                    checked = preferences.playSound,
+                    onCheckedChanged = { checked ->
+                        viewModel.savePlaySoundSettings(checked)
+                    },
+                )
+            }
+
+            item {
+                SwitchPreferenceWidget(
                     title = stringResource(R.string.media_session_preference),
                     subtitle = stringResource(R.string.media_session_subtitle),
                     checkedIcon = ImageVector.vectorResource(R.drawable.ic_computer_sound_fill),
