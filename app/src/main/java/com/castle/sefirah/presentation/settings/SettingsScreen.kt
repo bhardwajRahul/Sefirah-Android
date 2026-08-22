@@ -68,6 +68,7 @@ fun SettingsScreen(
     val recycleBinLocation by viewModel.recycleBinLocation.collectAsState()
     val localDevice by viewModel.localDevice.collectAsState()
     val showActionLabels by viewModel.showActionLabels.collectAsState()
+    val clipboardWorkerEnabled by viewModel.clipboardWorkerEnabled.collectAsState()
 
     // State for device name dialog
     var showDeviceNameDialog by remember { mutableStateOf(false) }
@@ -197,6 +198,18 @@ fun SettingsScreen(
                 checked = showActionLabels,
                 onCheckedChanged = viewModel::saveShowActionLabels,
             )
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            item {
+                SwitchPreferenceWidget(
+                    title = stringResource(R.string.clipboard_worker_preference),
+                    subtitle = stringResource(R.string.clipboard_worker_subtitle),
+                    icon = ImageVector.vectorResource(R.drawable.ic_content_copy),
+                    checked = clipboardWorkerEnabled,
+                    onCheckedChanged = viewModel::saveClipboardWorkerEnabled,
+                )
+            }
         }
 
         item {

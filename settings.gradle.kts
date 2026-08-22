@@ -34,3 +34,4 @@ include(":data")
 include(":data")
 
 include(":features")
+include(":worker")

@@ -26,14 +26,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import sefirah.FeatureManager
 import sefirah.actions.ActionFeature
 import sefirah.apps.AppListHandler
-import sefirah.clipboard.ClipboardHandler
+import sefirah.clipboard.ClipboardFeature
 import sefirah.common.notifications.AppNotifications
 import sefirah.common.notifications.NotificationCenter
 import sefirah.common.util.drawableToBase64Compressed
@@ -46,7 +46,6 @@ import sefirah.database.AppRepository
 import sefirah.domain.interfaces.DeviceManager
 import sefirah.domain.interfaces.PreferencesRepository
 import sefirah.domain.interfaces.SocketFactory
-import sefirah.FeatureManager
 import sefirah.domain.model.AddressEntry
 import sefirah.domain.model.Authentication
 import sefirah.domain.model.BaseRemoteDevice
@@ -90,7 +89,7 @@ class NetworkService : Service() {
 
     @Inject lateinit var notificationCenter: NotificationCenter
 
-    @Inject lateinit var clipboardHandler: ClipboardHandler
+    @Inject lateinit var clipboardFeature: ClipboardFeature
 
     @Inject lateinit var networkDiscovery: NetworkDiscovery
 
@@ -227,7 +226,7 @@ class NetworkService : Service() {
             Actions.SEND_CLIPBOARD.name -> {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
                 if (!text.isNullOrEmpty()) {
-                    sendClipboardMessage(ClipboardInfo("text/plain", text))
+                    clipboardFeature.sendClipboard(ClipboardInfo("text/plain", text))
                 }
             }
         }
@@ -642,18 +641,6 @@ class NetworkService : Service() {
         deviceManager.pairedDevices.value.forEach { device ->
             if (device.connectionState.isConnected) {
                 sendMessage(device.deviceId, message)
-            }
-        }
-    }
-
-    fun sendClipboardMessage(message: ClipboardInfo) {
-        scope.launch {
-            deviceManager.pairedDevices.value.forEach { device ->
-                if (device.connectionState.isConnected) {
-                    if (preferencesRepository.readClipboardSyncSettingsForDevice(device.deviceId).first()) {
-                        sendMessage(device.deviceId, message)
-                    }
-                }
             }
         }
     }

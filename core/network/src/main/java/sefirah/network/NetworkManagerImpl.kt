@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import sefirah.domain.interfaces.NetworkManager
-import sefirah.domain.model.ClipboardInfo
 import sefirah.domain.model.ConnectionDetails
 import sefirah.domain.model.PairedDevice
 import sefirah.domain.model.SocketMessage
@@ -69,10 +68,6 @@ class NetworkManagerImpl @Inject constructor(
 
     override fun sendMessage(deviceId: String, message: SocketMessage) {
         networkService?.sendMessage(deviceId, message)
-    }
-
-    override fun sendClipboardMessage(message: ClipboardInfo) {
-        networkService?.sendClipboardMessage(message)
     }
 
     override suspend fun approveDeviceConnection(deviceId: String) {

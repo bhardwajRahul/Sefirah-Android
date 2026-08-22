@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import sefirah.clipboard.ClipboardListener
+import sefirah.clipboard.ClipboardAccessibilityService
+import sefirah.worker.ShizukuHelper
 import sefirah.common.util.PermissionStates
 import sefirah.common.util.checkBatteryOptimization
 import sefirah.common.util.checkLocationPermissions
@@ -62,6 +63,10 @@ class SettingsViewModel @Inject constructor(
 
     val showActionLabels: StateFlow<Boolean> = preferencesRepository
         .readShowActionLabels()
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
+
+    val clipboardWorkerEnabled: StateFlow<Boolean> = preferencesRepository
+        .readClipboardWorkerEnabled()
         .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
     private val _storageLocation = MutableStateFlow("")
@@ -140,7 +145,8 @@ class SettingsViewModel @Inject constructor(
                 nearbyDevicesGranted = nearbyDevicesGranted,
                 overlayGranted = Settings.canDrawOverlays(context),
                 storageGranted = storageGranted,
-                accessibilityGranted = isAccessibilityServiceEnabled(context, "${context.packageName}/${ClipboardListener::class.java.canonicalName}"),
+                accessibilityGranted = isAccessibilityServiceEnabled(context, "${context.packageName}/${ClipboardAccessibilityService::class.java.canonicalName}"),
+                shizukuGranted = ShizukuHelper.isAuthorized(),
                 notificationListenerGranted = isNotificationListenerEnabled(context),
                 smsPermissionGranted = smsGranted,
                 contactsGranted = contactsGranted,
@@ -203,6 +209,12 @@ class SettingsViewModel @Inject constructor(
     fun saveShowActionLabels(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.saveShowActionLabels(enabled)
+        }
+    }
+
+    fun saveClipboardWorkerEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.saveClipboardWorkerEnabled(enabled)
         }
     }
 

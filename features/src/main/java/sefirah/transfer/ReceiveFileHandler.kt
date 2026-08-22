@@ -157,8 +157,12 @@ class ReceiveFileHandler(
     private suspend fun createOutputUri(metadata: FileMetadata): Uri {
         // Silent mode (clipboard) -> temp file URI
         if (isSilent) {
-            val extension = metadata.fileName.substringAfterLast('.', "")
-            return createTempFileUri(context, "sefirah_clipboard", extension)
+            val extension = metadata.mimeType
+                .substringAfter('/')
+                .substringBefore(';')
+                .lowercase()
+                .ifEmpty { "png" }
+            return createTempFileUri(context, FileMetadata.CLIPBOARD_FILE_NAME, extension)
         }
 
         // Normal mode -> storage location or Downloads

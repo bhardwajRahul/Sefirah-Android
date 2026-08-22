@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import sefirah.FeatureManager
-import sefirah.clipboard.ClipboardListener
+import sefirah.clipboard.ClipboardAccessibilityService
+import sefirah.worker.ShizukuHelper
 import sefirah.common.util.PermissionStates
 import sefirah.common.util.checkNotificationPermission
 import sefirah.common.util.checkStoragePermission
@@ -74,7 +75,8 @@ class DeviceSettingsViewModel @Inject constructor(
             batteryGranted = false, // Not needed
             locationGranted = false, // Not needed
             storageGranted = checkStoragePermission(context),
-            accessibilityGranted = isAccessibilityServiceEnabled(context, "${context.packageName}/${ClipboardListener::class.java.canonicalName}"),
+            accessibilityGranted = isAccessibilityServiceEnabled(context, "${context.packageName}/${ClipboardAccessibilityService::class.java.canonicalName}"),
+            shizukuGranted = ShizukuHelper.isAuthorized(),
             notificationListenerGranted = isNotificationListenerEnabled(context),
             smsPermissionGranted = smsPermissionGranted(context),
             phoneStateGranted = phoneStatePermissionGranted(context),

@@ -57,7 +57,7 @@ suspend fun NetworkService.handleMessage(device: BaseRemoteDevice, message: Sock
                 is NotificationReply -> notificationFeature.performReplyAction(message)
                 is PlaybackInfo -> remotePlaybackFeature.handlePlaybackSessionUpdates(device.deviceId, message)
                 is MediaAction -> playbackFeature.handlePlaybackAction(device.deviceId, message)
-                is ClipboardInfo -> clipboardHandler.setClipboard(message)
+                is ClipboardInfo -> clipboardFeature.setClipboard(message)
                 is FileTransferInfo -> fileTransferService.receiveFiles(device.deviceId, message)
                 is RingerModeState -> deviceControlHandler.handleRingerMode(message)
                 is DndState -> deviceControlHandler.handleDndStatus(message)

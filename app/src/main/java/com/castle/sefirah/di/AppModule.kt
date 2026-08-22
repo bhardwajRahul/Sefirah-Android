@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import sefirah.Feature
 import sefirah.actions.ActionFeature
+import sefirah.clipboard.ClipboardFeature
 import sefirah.communication.call.CallLogFeature
 import sefirah.communication.call.CallStateFeature
 import sefirah.communication.sms.SmsFeature
@@ -51,6 +52,10 @@ internal abstract class AppModule {
 
     @Binds
     abstract fun bindPreferencesRepository(impl: PreferencesRepositoryImpl): PreferencesRepository
+
+    @Binds
+    @IntoSet
+    abstract fun bindClipboardFeature(feature: ClipboardFeature): Feature
 
     @Binds
     @IntoSet

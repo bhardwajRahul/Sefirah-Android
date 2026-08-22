@@ -20,6 +20,7 @@ data class PermissionStates(
     val overlayGranted: Boolean = false,
     val storageGranted: Boolean = false,
     val accessibilityGranted: Boolean = false,
+    val shizukuGranted: Boolean = false,
     val notificationListenerGranted: Boolean = false,
     val readSensitiveNotificationsGranted: Boolean = false,
     val smsPermissionGranted: Boolean = false,

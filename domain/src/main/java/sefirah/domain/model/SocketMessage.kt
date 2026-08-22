@@ -25,6 +25,12 @@ object ClearNotifications : SocketMessage()
 object RequestApplicationList : SocketMessage()
 
 @Serializable
+@SerialName("RequestWorkerLaunch")
+data class RequestWorkerLaunch(
+    val command: String,
+) : SocketMessage()
+
+@Serializable
 @SerialName("BluetoothPairingRequest")
 object BluetoothPairingRequest : SocketMessage()
 
@@ -331,7 +337,11 @@ data class FileMetadata(
     val fileName: String,
     val mimeType: String,
     val fileSize: Long,
-) : Parcelable
+) : Parcelable {
+    companion object {
+        const val CLIPBOARD_FILE_NAME = "clipboard"
+    }
+}
 
 @Parcelize
 @Serializable

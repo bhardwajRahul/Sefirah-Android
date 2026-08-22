@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 plugins {
     alias(libs.plugins.sefirah.android.application)
     alias(libs.plugins.compose.compiler)
@@ -17,6 +19,12 @@ android {
         versionCode = 34
         versionName = "3.0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                arguments += listOf("-DANDROID_STL=none")
+            }
+        }
     }
 
     dependenciesInfo {
@@ -41,6 +49,15 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
             excludes += "META-INF/versions/**"
         }
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/jni/CMakeLists.txt")
+        }
     }
 }
 
@@ -57,7 +74,6 @@ kotlin {
         )
     }
 }
-
 
 dependencies {
     api(projects.core.common)

@@ -8,21 +8,22 @@ android {
 
     buildFeatures {
         compose = true
+        aidl = true
     }
 
     packaging {
         resources {
             excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
-            pickFirsts += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
-        }
-        resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
             excludes += "META-INF/versions/**"
+            pickFirsts += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
 }
 
 dependencies {
+    implementation(projects.worker)
+
     api(projects.core.common)
     api(projects.core.presentation)
     api(projects.domain)
@@ -48,4 +49,6 @@ dependencies {
     implementation(libs.apache.sshd.scp)
     implementation(libs.apache.sshd.mina)
     implementation(libs.apache.mina.core)
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
 }

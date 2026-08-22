@@ -55,6 +55,7 @@ import com.castle.sefirah.presentation.settings.SettingsViewModel
 import sefirah.common.R
 import sefirah.common.util.NEARBY_DEVICES_PERMISSIONS
 import sefirah.common.util.openAppSettings
+import sefirah.worker.ShizukuHelper
 import sefirah.presentation.components.padding
 
 internal class PermissionStep : OnboardingStep {
@@ -288,6 +289,20 @@ internal class PermissionStep : OnboardingStep {
                             },
                             viewModel = viewModel
                         )
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            PermissionItem(
+                                title = stringResource(R.string.shizuku_permission),
+                                subtitle = stringResource(R.string.shizuku_permission_rationale),
+                                granted = permissionStates.shizukuGranted,
+                                onRequest = {
+                                    ShizukuHelper.requestPermission {
+                                        viewModel.updatePermissionStates()
+                                    }
+                                },
+                                viewModel = viewModel
+                            )
+                        }
 
                         PermissionItem(
                             title = stringResource(R.string.accessibility_service),

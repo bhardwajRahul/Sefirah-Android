@@ -8,12 +8,9 @@ package sefirah.clipboard
 
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
 import sefirah.clipboard.ClipboardDetection.AEvent.Companion.copyKeyWords
 import sefirah.clipboard.extensions.StripArrayList
-
-typealias Predicate = (ClipboardDetection.AEvent) -> Boolean
 
 class ClipboardDetection(
     private val copyWord: String = "Copy"
@@ -30,14 +27,10 @@ class ClipboardDetection(
     }
 
     /** Some hacks I figured out which would trigger copy/cut for Android 10 */
-    fun getSupportedEventTypes(event: AccessibilityEvent?, predicate: Predicate? = null): Boolean {
+    fun getSupportedEventTypes(event: AccessibilityEvent?): Boolean {
         if (event == null) return false
-
-        val clipEvent = AEvent.from(event)
-        if (predicate?.invoke(clipEvent) == true) return false
-        return detectAppropriateEvents(event = clipEvent)
+        return detectAppropriateEvents(event = AEvent.from(event))
     }
-
 
     private fun detectAppropriateEvents(event: AEvent): Boolean {
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED) {
@@ -59,7 +52,7 @@ class ClipboardDetection(
                     && event.text?.toString()?.contains(copyWord, true) == true)
                     || event.contentDescription == "Cut" || event.contentDescription == copyWord)
         ) {
-            Log.d(TAG,"Copy captured - 2")
+            Log.d(TAG, "Copy captured - 2")
             return true
         }
 
@@ -76,7 +69,7 @@ class ClipboardDetection(
                             && secondEvent.className == firstEvent.className) && secondEvent.text.toString() == firstEvent.text.toString()
                 typeViewSelectionChangeEvent.clear()
                 if (success) {
-                    Log.d(TAG,"Copy captured - 3")
+                    Log.d(TAG, "Copy captured - 3")
                     return true
                 }
             }
@@ -88,30 +81,23 @@ class ClipboardDetection(
             val previousEvent = lastEvent!!
 
             if (previousEvent.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-                /* && previousEvent.ScrollX == -1 && previousEvent.ScrollY == -1*/
                 && previousEvent.text?.size == 1
                 && (previousEvent.text?.toString()?.contains(copyWord, true) == true
                         || previousEvent.contentDescription?.contains(copyWord, true) == true)) {
-                Log.d(TAG,"Copy captured - 1.1")
+                Log.d(TAG, "Copy captured - 1.1")
                 return true
             }
         }
 
-        /*if (event.sourceActions.containsAll(copyActions) && event.eventType == AccessibilityEvent.TYPE_VIEW_LONG_CLICKED) {
-            Log.d(TAG,"Copy captured - 1.2")
-            return true
-        }*/
-        
         if (event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED && event.className == "${Toast::class.qualifiedName}\$TN"
             && event.text != null && event.text?.toString()?.contains(copyKeyWords) == true) {
-            Log.d(TAG,"Copy captured - 1.2")
+            Log.d(TAG, "Copy captured - 1.2")
             return true
         }
 
         lastEvent = event.clone()
         return false
     }
-
 
     data class AEvent(
         var eventType: Int? = null,
@@ -128,12 +114,8 @@ class ClipboardDetection(
         var toIndex: Int? = null,
         var scrollX: Int? = null,
         var scrollY: Int? = null,
-        var sourceActions: List<AccessibilityNodeInfo.AccessibilityAction> = emptyList(),
     ) {
         companion object {
-//            internal val copyActions = listOf<AccessibilityNodeInfo.AccessibilityAction>(
-//                AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK,
-//            )
             internal val copyKeyWords = "(copied)|(Copied)|(clipboard)".toRegex()
 
             fun from(event: AccessibilityEvent): AEvent {
@@ -152,7 +134,6 @@ class ClipboardDetection(
                     toIndex = event.toIndex,
                     scrollX = event.scrollX,
                     scrollY = event.scrollY,
-                    sourceActions = event.source?.actionList ?: emptyList()
                 )
             }
         }

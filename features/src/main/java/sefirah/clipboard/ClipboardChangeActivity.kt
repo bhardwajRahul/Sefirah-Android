@@ -1,51 +1,70 @@
-/*
- * Acknowledgment:
- * Portions of this code are adapted from XClipper by Kaustubh Patange.
- * Licensed under the Apache License 2.0.
- */
-
 package sefirah.clipboard
 
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import sefirah.domain.interfaces.NetworkManager
-import sefirah.domain.model.ClipboardInfo
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * Invisible activity that briefly takes focus so the app can read the clipboard on Android 10+
+ */
 @AndroidEntryPoint
 class ClipboardChangeActivity : FragmentActivity() {
-    @Inject lateinit var networkManager: NetworkManager
+    @Inject lateinit var clipboardFeature: ClipboardFeature
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        isRunning = true
+        setContentView(
+            View(this).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                )
+                alpha = 0f
+            },
+        )
+        window.attributes = window.attributes.apply {
+            dimAmount = 0f
+            flags = flags or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+        }
+    }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (!hasFocus) return
 
         lifecycleScope.launch {
-            /** Delay gives [ClipboardManager] time to capture clipboard text. */
-            delay(500.milliseconds)
-            if (!hasWindowFocus()) return@launch
-
-            val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-            val data = clipboardManager.primaryClip?.getItemAt(0)?.text?.toString()
-            if (!data.isNullOrEmpty()) {
-                networkManager.sendClipboardMessage(ClipboardInfo("text/plain", data))
-            }
+            clipboardFeature.sendPrimaryClipboard()
             finish()
         }
     }
 
+    override fun onDestroy() {
+        isRunning = false
+        super.onDestroy()
+    }
+
     companion object {
-        fun launch(context: Context) = with(context) {
-            val intent = Intent(this, ClipboardChangeActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
+        @Volatile
+        var isRunning: Boolean = false
+            private set
+
+        fun launch(context: Context) {
+            if (isRunning) return
+            val intent = Intent(context, ClipboardChangeActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
         }
     }
 }

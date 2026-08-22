@@ -22,8 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -58,9 +56,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.rememberAsyncImagePainter
 import com.castle.sefirah.presentation.settings.components.SwitchPreferenceWidget
 import com.castle.sefirah.presentation.settings.components.TextPreferenceWidget
-import sefirah.clipboard.ClipboardListener
 import sefirah.common.R
-import sefirah.common.util.isAccessibilityServiceEnabled
 import sefirah.common.util.isNotificationListenerEnabled
 import sefirah.common.util.openAppSettings
 import sefirah.domain.model.PairedDevice
@@ -178,21 +174,13 @@ fun DeviceSettingsScreen(
                 }
 
             item {
-                SwitchPermissionPrefWidget(
+                SwitchPreferenceWidget(
                     title = stringResource(R.string.clipboard_sync_preference),
                     subtitle = stringResource(R.string.clipboard_sync_subtitle),
                     checkedIcon = ImageVector.vectorResource(R.drawable.ic_content_copy_fill),
                     uncheckedIcon = ImageVector.vectorResource(R.drawable.ic_content_copy),
-                    granted = permissionStates.accessibilityGranted,
-                    checked = preferences.clipboardSync && permissionStates.accessibilityGranted,
-                    permission = null,
-                    onRequest = {
-                        if(!isAccessibilityServiceEnabled(context, "${context.packageName}/${ClipboardListener::class.java.canonicalName}") ) {
-                            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                        }
-                    },
+                    checked = preferences.clipboardSync,
                     onCheckedChanged = { viewModel.saveClipboardSyncSettings(it) },
-                    viewModel = viewModel
                 )
             }
 
@@ -452,31 +440,6 @@ private fun DeviceStatusInfo(
     ) {
         Icon(
             painter = icon,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = color
-        )
-        Spacer(Modifier.width(4.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = color
-        )
-    }
-}
-
-@Composable
-private fun DeviceStatusInfo(
-    icon: ImageVector,
-    text: String,
-    color: androidx.compose.ui.graphics.Color
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(16.dp),
             tint = color

@@ -37,6 +37,9 @@ interface PreferencesRepository {
     // Device-specific settings
     suspend fun saveClipboardSyncSettingsForDevice(deviceId: String, clipboardSync: Boolean)
     fun readClipboardSyncSettingsForDevice(deviceId: String): Flow<Boolean>
+
+    suspend fun saveClipboardWorkerEnabled(enabled: Boolean)
+    fun readClipboardWorkerEnabled(): Flow<Boolean>
     
     suspend fun saveMessageSyncSettingsForDevice(deviceId: String, messageSync: Boolean)
     fun readMessageSyncSettingsForDevice(deviceId: String): Flow<Boolean>

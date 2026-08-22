@@ -77,7 +77,9 @@
     <string name="storage_access">Storage Access</string>
     <string name="storage_access_rationale">To access Android storage from remote device</string>
     <string name="accessibility_service">Accessibility Service</string>
-    <string name="accessibility_service_rationale">To detect clipboard changes</string>
+    <string name="accessibility_service_rationale">Fallback clipboard detection when Shizuku is unavailable</string>
+    <string name="shizuku_permission">Shizuku</string>
+    <string name="shizuku_permission_rationale">Used for clipboard auto-sync on Android 10+</string>
     <string name="notification_access">Notification Access</string>
     <string name="notification_access_rationale">To read, dismiss, and trigger actions from notifications, and toggle DND</string>
     <string name="messages_permission">Messages permission</string>
@@ -116,7 +118,9 @@
 
     <!-- Preferences -->
     <string name="clipboard_sync_preference">Sync clipboard with desktop</string>
-    <string name="clipboard_sync_subtitle">[Requires accessibility service permission] Detects clipboard changes and syncs them to desktop</string>
+    <string name="clipboard_sync_subtitle">Send clipboard content to this device when you copy on your phone</string>
+    <string name="clipboard_worker_preference">Auto-detect clipboard</string>
+    <string name="clipboard_worker_subtitle">Auto-detect clipboard changes on Android 10+ via Shizuku or desktop ADB.</string>
     <string name="image_clipboard_preference">Add received Images to clipboard</string>
     <string name="image_clipboard_subtitle">Copies the receiving image files to your clipboard</string>
     <string name="notification_sync_preference">Sync notifications</string>
