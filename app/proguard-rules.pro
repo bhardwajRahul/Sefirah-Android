@@ -66,6 +66,16 @@
 -dontwarn net.i2p.crypto.eddsa.**
 -dontwarn javax.management.**
 
+# keep adapter methods that extend hidden Stub classes.
+# Missing class android.app.IProcessObserver$Stub
+# Missing class android.app.IUidObserver$Stub
+-keepclassmembers class rikka.hidden.compat.adapter.ProcessObserverAdapter {
+    <methods>;
+}
+-keepclassmembers class rikka.hidden.compat.adapter.UidObserverAdapter {
+    <methods>;
+}
+
 -keep class com.google.android.mms.** { *; }
 -keepclassmembers class com.google.android.mms.** { *; }
 -keep class com.android.mms.** { *; }
