@@ -108,6 +108,8 @@ dependencies {
     implementation(libs.camerax.view)
     implementation(libs.guava)
 
+    compileOnly(libs.hidden.stub)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
