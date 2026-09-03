@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project("sefirah_worker")
 
+# Disable NDK-embedded Build IDs for reproducible builds.
+add_link_options("-Wl,--build-id=none")
+
 add_executable(libsefirah_worker.so starter.c misc.c)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
