@@ -30,6 +30,17 @@ class NotificationCenter @Inject constructor(
         }
     }
 
+    fun buildNotification(
+        channelId: String,
+        builder: NotificationCompat.Builder.() -> Unit = {}
+    ) : NotificationCompat.Builder {
+        return NotificationCompat.Builder(context, channelId).apply {
+            setSmallIcon(R.drawable.ic_launcher_foreground)
+            priority = NotificationCompat.PRIORITY_DEFAULT
+            builder(this)
+        }
+    }
+
     fun cancelNotification(notificationId: Int) = manager.cancel(notificationId)
 
     @SuppressLint("MissingPermission")

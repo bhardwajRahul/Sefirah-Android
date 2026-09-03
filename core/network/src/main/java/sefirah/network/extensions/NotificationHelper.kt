@@ -73,17 +73,7 @@ fun NetworkService.cancelPairingVerificationNotification(deviceId: String) {
     notificationCenter.cancelNotification(AppNotifications.PAIRING_REQUEST_ID + deviceId.hashCode())
 }
 
-/**
- * Sets the foreground notification based on connection state
- * @param deviceName Device name(s) to display (comma-separated if multiple)
- * @param deviceId Device ID for disconnect action (only used when single device connected)
- * @param notificationId Notification ID to use
- */
-fun NetworkService.setNotification(
-    deviceName: String?,
-    deviceId: String?,
-    notificationId: Int
-) {
+private fun NetworkService.buildConnectionNotification(deviceName: String?, deviceId: String?): NotificationCompat.Builder {
     // Main Activity Intent
     val mainIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -101,9 +91,8 @@ fun NetworkService.setNotification(
         getString(R.string.notification_status_disconnected)
     } else getString(R.string.notification_status_connected, deviceName)
 
-    notificationBuilder = notificationCenter.showNotification(
+    val builder = notificationCenter.buildNotification(
         channelId = AppNotifications.DEVICE_CONNECTION_CHANNEL,
-        notificationId = notificationId,
     ) {
         setContentTitle(getString(R.string.notification_device_connection))
         setContentText(contentText)
@@ -122,10 +111,22 @@ fun NetworkService.setNotification(
                 putExtra(DEVICE_ID_EXTRA, deviceId)
             }
             val disconnectPendingIntent: PendingIntent = PendingIntent.getService(this, 0, disconnectIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-            notificationBuilder.addAction(R.drawable.ic_launcher_foreground, getString(R.string.notification_disconnect_action), disconnectPendingIntent)
+            builder.addAction(R.drawable.ic_launcher_foreground, getString(R.string.notification_disconnect_action), disconnectPendingIntent)
         }
-        notificationBuilder.addAction(R.drawable.ic_launcher_foreground, getString(R.string.send_clipboard), clipboardPendingIntent)
+        builder.addAction(R.drawable.ic_launcher_foreground, getString(R.string.send_clipboard), clipboardPendingIntent)
     }
 
+    return builder
+}
+
+/** Starts the foreground service with the connection-status notification */
+fun NetworkService.startForegroundNotification(notificationId: Int) {
+    notificationBuilder = buildConnectionNotification(null, null)
     startForeground(notificationId, notificationBuilder.build())
+}
+
+/** Updates the connection-status notification. */
+fun NetworkService.updateNotification(deviceName: String?, deviceId: String?, notificationId: Int) {
+    notificationBuilder = buildConnectionNotification(deviceName, deviceId)
+    notificationCenter.modifyNotification(notificationBuilder, notificationId) {}
 }

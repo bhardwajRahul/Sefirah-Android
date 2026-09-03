@@ -65,7 +65,8 @@ import sefirah.media.PlaybackFeature
 import sefirah.media.RemotePlaybackFeature
 import sefirah.network.extensions.cancelPairingVerificationNotification
 import sefirah.network.extensions.handleMessage
-import sefirah.network.extensions.setNotification
+import sefirah.network.extensions.startForegroundNotification
+import sefirah.network.extensions.updateNotification
 import sefirah.network.extensions.showPairingVerificationNotification
 import sefirah.network.util.SslHelper
 import sefirah.notification.NotificationFeature
@@ -240,7 +241,7 @@ class NetworkService : Service() {
         registerReceiver(screenOnReceiver, IntentFilter(Intent.ACTION_SCREEN_ON))
         registerReceiver(wifiStateReceiver, IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION))
 
-        setNotification(null, null, AppNotifications.DEVICE_CONNECTION_ID)
+        startForegroundNotification(AppNotifications.DEVICE_CONNECTION_ID)
 
         scope.launch {
             tcpServerPort = startTcpServer()
@@ -256,9 +257,9 @@ class NetworkService : Service() {
                     val deviceNames = connectedDevices.joinToString(", ") { it.deviceName }
                     // Only pass deviceId for disconnect action when single device connected
                     val deviceId = if (connectedDevices.size == 1) connectedDevices.first().deviceId else null
-                    setNotification(deviceNames, deviceId, AppNotifications.DEVICE_CONNECTION_ID)
+                    updateNotification(deviceNames, deviceId, AppNotifications.DEVICE_CONNECTION_ID)
                 } else {
-                    setNotification(null, null, AppNotifications.DEVICE_CONNECTION_ID)
+                    updateNotification(null, null, AppNotifications.DEVICE_CONNECTION_ID)
                 }
             }
         }
@@ -781,6 +782,7 @@ class NetworkService : Service() {
     }
 
     override fun onDestroy() {
+        scope.cancel()
         serverAcceptJob?.cancel()
         try {
             tcpServerSocket?.close()
@@ -797,8 +799,6 @@ class NetworkService : Service() {
                 }
             }
         }
-
-        scope.cancel()
 
         unregisterReceiver(screenOnReceiver)
         unregisterReceiver(wifiStateReceiver)
