@@ -33,9 +33,11 @@ class DeviceConnection(
             mutex.withLock {
                 try {
                     writeChannel?.let { channel ->
-                        val jsonMessage = MessageSerializer.serialize(message)
-                        channel.writeStringUtf8("$jsonMessage\n")
-                        channel.flush()
+                        MessageSerializer.serialize(message)?.let { jsonMessage ->
+                            channel.writeStringUtf8(jsonMessage)
+                            channel.writeStringUtf8("\n")
+                            channel.flush()
+                        }
                     }
                 } catch (ex: Exception) {
                     Log.e(TAG, "Failed to send message to $deviceId", ex)
